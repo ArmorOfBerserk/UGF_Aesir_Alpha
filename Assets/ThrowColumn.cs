@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class ThrowColumn : MonoBehaviour
 {
+    [SerializeField] int speed = 50;
+
     SplineProjector sp;
     Rigidbody rb;
 
@@ -12,12 +14,12 @@ public class ThrowColumn : MonoBehaviour
         sp = GetComponent<SplineProjector>();
     }
 
-    void Update()
+    void FixedUpdate()
     {
-        if(Input.GetKeyDown(KeyCode.E)){
-            rb.AddForce(sp.result.forward * 10, ForceMode.Impulse);
-        } else if(Input.GetKeyDown(KeyCode.Q)){
-            rb.AddForce(-sp.result.forward * 10, ForceMode.Impulse);
+        if(Input.GetKey(KeyCode.E)){
+            rb.linearVelocity = sp.result.forward * speed;
+        } else if(Input.GetKey(KeyCode.Q)){
+            rb.linearVelocity = -sp.result.forward * speed;
         }
     }
 }

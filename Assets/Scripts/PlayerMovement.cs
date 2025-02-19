@@ -59,11 +59,13 @@ public class PlayerMovement : MonoBehaviour
     #region Required Variables
     // Variabili che devono essere assegnate dall'inspector o che si riferiscono a classi esterne
     [Header("References")]
+    [SerializeField] private CommonValues commonValues;
     [SerializeField] private PlayerStats playerStats;
     [SerializeField] private SpriteRenderer spriteRenderer;
     private SplineProjector _splineProjector;
     private Rigidbody rb;
     private Animator anim;
+    private Transform model;
 
     [Header("Checks")]
     [SerializeField] private Checks _checks;
@@ -78,6 +80,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 moveInput;
     private bool wantsToJump;
     private float _lastTimeGrounded;
+    private Vector3 originalScale;
     #endregion
 
     #region Animations State variables
@@ -113,6 +116,8 @@ public class PlayerMovement : MonoBehaviour
 
         rb = GetComponent<Rigidbody>();
         _splineProjector = GetComponent<SplineProjector>();
+
+        model = transform.GetChild(0).GetChild(0);
     }
 
     private void Start()
@@ -127,6 +132,15 @@ public class PlayerMovement : MonoBehaviour
         anim = GetComponentInChildren<Animator>();
 
         StartCoroutine(CheckIfStuck());
+        StartCoroutine(ChangeSpline());
+    }
+
+    IEnumerator ChangeSpline(){
+        while(true){
+            yield return new WaitUntil(() => _splineProjector.spline == null);
+            yield return new WaitUntil(() => _splineProjector.spline != null);
+            commonValues.currentSpline = _splineProjector.spline;
+        }
     }
 
     private void modifyIdleAnimations(int n)
@@ -141,10 +155,14 @@ public class PlayerMovement : MonoBehaviour
         {
             yield return new WaitForSeconds(.5f);
 
-            if (Physics.CheckBox(transform.position, new Vector3(0.1f, 0.25f, 0.1f), Quaternion.identity, ~(1 << gameObject.layer)))
+            if (Physics.CheckBox(transform.position, new Vector3(0.05f, 0.2f, 0.05f), Quaternion.identity, ~(1 << gameObject.layer)))
             {
                 Debug.Log("Stuck");
                 transform.position += new Vector3(0, 1, 0);
+            }
+
+            if(transform.parent == null){
+                transform.localScale = Vector3.one;
             }
         }
     }
@@ -168,14 +186,15 @@ public class PlayerMovement : MonoBehaviour
         // Proietta la velocità del player sulla direzione della spline
         float velocityAlongSpline = Vector3.Dot(rb.linearVelocity, forwardDirection);
 
+
         // Se il valore è negativo, significa che il player sta andando "all'indietro"
         if (velocityAlongSpline < 0)
         {
-            transform.localScale = new Vector3(-1, 1, 1); // Gira il modello a sinistra
+            model.localScale = new Vector3(-0.5f,0.5f,0.5f); // Gira il modello a sinistra
         }
         else if (velocityAlongSpline > 0)
         {
-            transform.localScale = new Vector3(1, 1, 1); // Gira il modello a destra
+            model.localScale = new Vector3(0.5f,0.5f,0.5f); // Gira il modello a sinistra
         }
 
 
@@ -301,6 +320,22 @@ public class PlayerMovement : MonoBehaviour
         wantsToJump = false;
     }
 
+    void OnCollisionStay(Collision collision)
+    {
+        if(collision.gameObject.layer > 28 && collision.gameObject.layer < 32){
+            transform.parent = collision.transform.parent;
+            collision.transform.parent.GetComponent<ColumnController>().AttachedPlayer = transform;
+        }
+    }
+
+    void OnCollisionExit(Collision collision)
+    {
+        if(collision.gameObject.layer > 28 && collision.gameObject.layer < 32){
+            transform.parent = null;
+            collision.transform.parent.GetComponent<ColumnController>().AttachedPlayer = null;
+        }
+    }
+
 
     private void OnDrawGizmos()
     {
@@ -310,6 +345,6 @@ public class PlayerMovement : MonoBehaviour
         Gizmos.DrawWireCube(_checks.backCheck.position, _checks.backCheckSize);
 
         Gizmos.color = Color.green;
-        Gizmos.DrawWireCube(transform.position, new Vector3(0.1f, 0.25f, 0.1f));
+        Gizmos.DrawWireCube(transform.position, new Vector3(0.05f, 0.2f, 0.05f));
     }
 }

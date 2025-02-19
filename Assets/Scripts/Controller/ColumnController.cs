@@ -23,6 +23,8 @@ public class ColumnController : MonoBehaviour
     public ColumnDirection ColumnDirection { get; private set; }
     [HideInInspector] public bool isGenerated = false;
 
+    public Transform AttachedPlayer;
+
     public bool IsDestroyed { get; private set; }
     int visiblePartitions;
     int startY;
@@ -57,7 +59,12 @@ public class ColumnController : MonoBehaviour
 
             if (IsDestroyed) yield break;
 
-            transform.localScale += new Vector3(0, _generationSpeed * Time.deltaTime, 0);
+            transform.localScale += new Vector3(0, _generationSpeed * Time.fixedDeltaTime, 0);
+
+            if(AttachedPlayer != null) {
+                AttachedPlayer.localScale = new Vector3(1.111111f, 1, 1.111111f);
+                AttachedPlayer.localPosition += new Vector3(0, _generationSpeed * Time.fixedDeltaTime * 1.5f, 0);
+            }
             
             if(transform.localScale.y >= _lenght){
                 transform.localScale = new Vector3(transform.localScale.x, _lenght, transform.localScale.z);
@@ -130,6 +137,9 @@ public class ColumnController : MonoBehaviour
         IsDestroyed = true;
         visiblePartitions = 0;
 
+        Transform player = transform.Find("Player");
+        if(player != null) player.parent = null;
+
         transform.parent.position = new Vector3(0, startY, 0);
         
         _gravityController.gameObject.GetComponent<ColumnGravityController>().ReInitialize(ColumnDirection);
@@ -141,7 +151,7 @@ public class ColumnController : MonoBehaviour
     public void BecameInvisible(){
         visiblePartitions--;
         if(visiblePartitions <= 0){
-            Reset();
+            // Reset();
         }
     }
 

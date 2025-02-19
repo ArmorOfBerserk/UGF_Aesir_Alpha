@@ -49,6 +49,8 @@ public class ColumnGravityController : MonoBehaviour
 
         _columnDirection = columnDirection;
 
+        GetComponent<SplineProjector>().spline = commonValues.currentSpline;
+
         // if(columnDirection == ColumnDirection.Up && !shouldFall) col.excludeLayers = (1 << LayerMask.NameToLayer("Ground")) | (1 << gameObject.layer);
         // else col.excludeLayers = 1 << gameObject.layer;
 
@@ -58,7 +60,7 @@ public class ColumnGravityController : MonoBehaviour
     void OnTriggerStay(Collider other)
     {
         if(_columnDirection == ColumnDirection.Up && other.gameObject.layer == LayerMask.NameToLayer("Ground")) return;
-        Debug.Log("TriggerStay " + other.name);
+        // Debug.Log($"sono {gameObject.layer} e ho triggerato {other.gameObject.layer}");
         target.GetComponent<ColumnController>().Reset();
     }
 }

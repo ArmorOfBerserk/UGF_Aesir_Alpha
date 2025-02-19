@@ -673,7 +673,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 453ef2bcc92003342b9fe6a327abc98c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  updateMethod: 0
+  updateMethod: 1
   _spline: {fileID: 0}
   _autoUpdate: 1
   _rotationModifier:
@@ -719,7 +719,7 @@ MonoBehaviour:
   triggerGroup: 0
   _direction: 1
   _dontLerpDirection: 0
-  _physicsMode: 0
+  _physicsMode: 1
   _motion:
     _hasOffset: 0
     _hasRotationOffset: 0
@@ -727,15 +727,15 @@ MonoBehaviour:
     _rotationOffset: {x: 0, y: 0, z: 0}
     _baseScale: {x: 1, y: 1, z: 1}
     _2dMode: 0
-    velocityHandleMode: 0
+    velocityHandleMode: 3
     applyPositionX: 1
     applyPositionY: 0
     applyPositionZ: 1
     applyPosition2D: 1
-    retainLocalPosition: 1
+    retainLocalPosition: 0
     direction: 1
     applyRotationX: 0
-    applyRotationY: 0
+    applyRotationY: 1
     applyRotationZ: 0
     applyRotation2D: 1
     retainLocalRotation: 0
@@ -743,7 +743,7 @@ MonoBehaviour:
     applyScaleY: 0
     applyScaleZ: 0
     targetUser: {fileID: 0}
-  targetRigidbody: {fileID: 0}
+  targetRigidbody: {fileID: 5419820950301182792}
   targetRigidbody2D: {fileID: 0}
   targetTransform: {fileID: 6087636035411175558}
   _result:
