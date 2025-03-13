@@ -81,6 +81,9 @@ public class PlayerMovement : MonoBehaviour
     private bool wantsToJump;
     private float _lastTimeGrounded;
     private Vector3 originalScale;
+    private float originalVelocity;
+    private float velocityReduction;
+    private Coroutine _WallJumpReduction;
     #endregion
 
     #region Animations State variables
@@ -97,6 +100,8 @@ public class PlayerMovement : MonoBehaviour
     Vector3 _zeroVelocity;
     Vector3 _forewardTimesSpeed;
     #endregion
+
+    [SerializeField] private Vector3 velocity;
 
     public bool IsGrounded { get => Physics.CheckBox(_checks.groundCheck.position, _checks.groundCheckSize, Quaternion.identity, _checks.groundLayer); }
     public bool IsFront { get => Physics.CheckBox(_checks.frontCheck.position, _checks.frontCheckSize, Quaternion.identity, _checks.groundLayer); }
@@ -123,6 +128,7 @@ public class PlayerMovement : MonoBehaviour
     private void Start()
     {
         _zeroVelocity = Vector3.zero;
+        velocityReduction = 1;
 
         playerStats.Recalculate();
         _checks.CorrectHalfSize();
@@ -200,11 +206,11 @@ public class PlayerMovement : MonoBehaviour
 
         if (moveInput.x > 0)
         {
-            _targetVelocity = _forewardTimesSpeed;
+            _targetVelocity = _forewardTimesSpeed * velocityReduction;
         }
         else if (moveInput.x < 0)
         {
-            _targetVelocity = -_forewardTimesSpeed;
+            _targetVelocity = -_forewardTimesSpeed * velocityReduction;
         }
         else _targetVelocity = _zeroVelocity;
 
@@ -226,12 +232,18 @@ public class PlayerMovement : MonoBehaviour
             else if (IsFront)
             {
                 wantsToJump = false;
-                rb.AddForce((_splineProjector.result.up * (playerStats.jumpStartSpeed - rb.linearVelocity.y)) - _forewardTimesSpeed, ForceMode.VelocityChange);
+                rb.AddForce((_splineProjector.result.up * (playerStats.jumpStartSpeed - rb.linearVelocity.y)) - _forewardTimesSpeed * 1.25f, ForceMode.VelocityChange);
+
+                if(_WallJumpReduction != null) StopCoroutine(_WallJumpReduction);
+                _WallJumpReduction = StartCoroutine(WallJumpReduction());
             }
             else if (IsBack)
             {
                 wantsToJump = false;
-                rb.AddForce((_splineProjector.result.up * (playerStats.jumpStartSpeed - rb.linearVelocity.y)) + _forewardTimesSpeed, ForceMode.VelocityChange);
+                rb.AddForce((_splineProjector.result.up * (playerStats.jumpStartSpeed - rb.linearVelocity.y)) + _forewardTimesSpeed * 1.25f, ForceMode.VelocityChange);
+
+                if(_WallJumpReduction != null) StopCoroutine(_WallJumpReduction);
+                _WallJumpReduction = StartCoroutine(WallJumpReduction());
             }
         }
         else
@@ -311,6 +323,8 @@ public class PlayerMovement : MonoBehaviour
         wasGrounded = IsGrounded;
 
         #endregion
+
+        velocity = rb.linearVelocity;
     }
 
     IEnumerator Jump()
@@ -318,6 +332,20 @@ public class PlayerMovement : MonoBehaviour
         wantsToJump = true;
         yield return new WaitForSeconds(_jumpBufferTime);
         wantsToJump = false;
+    }
+
+    IEnumerator WallJumpReduction()
+    {
+        float time = 0;
+        while (time < 1f)
+        {
+            time += Time.fixedDeltaTime;
+            velocityReduction = Mathf.Lerp(0, .9f, time);
+            yield return new WaitForFixedUpdate();
+        }
+        yield return new WaitForFixedUpdate();
+        velocityReduction = 1;
+        _WallJumpReduction = null;
     }
 
     void OnCollisionStay(Collision collision)
