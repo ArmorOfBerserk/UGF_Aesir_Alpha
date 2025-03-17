@@ -348,19 +348,37 @@ public class PlayerMovement : MonoBehaviour
         _WallJumpReduction = null;
     }
 
-    void OnCollisionStay(Collision collision)
+    // void OnCollisionStay(Collision collision)
+    // {
+    //     if(collision.gameObject.layer > 28 && collision.gameObject.layer < 32){
+    //         Debug.Log("stay "+collision.gameObject.name);
+    //         transform.parent = collision.transform.parent;
+    //         collision.transform.parent.GetComponent<ColumnController>().AttachedPlayer = transform;
+    //     }
+    // }
+
+    // void OnCollisionExit(Collision collision)
+    // {
+    //     if(collision.gameObject.layer > 28 && collision.gameObject.layer < 32){
+    //         Debug.Log("exit "+collision.gameObject.name);
+    //         transform.parent = null;
+    //         collision.transform.parent.GetComponent<ColumnController>().AttachedPlayer = null;
+    //     }
+    // }
+
+    void OnTriggerEnter(Collider other)
     {
-        if(collision.gameObject.layer > 28 && collision.gameObject.layer < 32){
-            transform.parent = collision.transform.parent;
-            collision.transform.parent.GetComponent<ColumnController>().AttachedPlayer = transform;
+        if(other.gameObject.layer > 28 && other.gameObject.layer < 32){
+            Debug.Log("stay "+other.gameObject.name);
+            other.transform.GetComponent<ColumnController>().AttachPlayer(transform);
         }
     }
 
-    void OnCollisionExit(Collision collision)
+    void OnTriggerExit(Collider other)
     {
-        if(collision.gameObject.layer > 28 && collision.gameObject.layer < 32){
-            transform.parent = null;
-            collision.transform.parent.GetComponent<ColumnController>().AttachedPlayer = null;
+        if(other.gameObject.layer > 28 && other.gameObject.layer < 32){
+            Debug.Log("exit "+other.gameObject.name);
+            other.transform.GetComponent<ColumnController>().DetachPlayer();
         }
     }
 

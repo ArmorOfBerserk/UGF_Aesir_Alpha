@@ -30,10 +30,10 @@ public class ColumnGravityController : MonoBehaviour
     }
 
     IEnumerator EnableGravity(){
-        yield return waitForFixedUpdate;
+        // yield return waitForFixedUpdate;
+        yield return waitUntil;
         col.isTrigger = false;
 
-        // yield return waitUntil;
         while(true){
             target.SetPositionAndRotation(transform.position, transform.rotation);
             yield return waitForFixedUpdate;
@@ -59,6 +59,7 @@ public class ColumnGravityController : MonoBehaviour
 
     void OnTriggerStay(Collider other)
     {
+        if(rb.useGravity) return;
         if(_columnDirection == ColumnDirection.Up && other.gameObject.layer == LayerMask.NameToLayer("Ground")) return;
         // Debug.Log($"sono {gameObject.layer} e ho triggerato {other.gameObject.layer}");
         target.GetComponent<ColumnController>().Reset();
