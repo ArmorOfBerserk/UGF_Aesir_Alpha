@@ -11,21 +11,21 @@ public class CheckpointController : MonoBehaviour
     }
 
 
-    #region TEST ONLY
+    // #region TEST ONLY
 
-    public void LoadCheckpoint() {
-        var data = SaveSystem.LoadGameData();
-        if (data != null) {
-            var pos = new Vector3(data.position[0], data.position[1], data.position[2]);
-            GameObject.FindGameObjectWithTag("Player").transform.position = pos;
-        }
-    }
+    // public void LoadCheckpoint() {
+    //     var data = SaveSystem.LoadGameData();
+    //     if (data != null) {
+    //         var pos = new Vector3(data.position[0], data.position[1], data.position[2]);
+    //         GameObject.FindGameObjectWithTag("Player").transform.position = pos;
+    //     }
+    // }
 
-    private void Update() {
-        if (Input.GetKeyDown(KeyCode.L)) {
-            LoadCheckpoint();
-        }
-    }
+    // private void Update() {
+    //     if (Input.GetKeyDown(KeyCode.L)) {
+    //         LoadCheckpoint();
+    //     }
+    // }
 
-    #endregion
+    // #endregion
 }
