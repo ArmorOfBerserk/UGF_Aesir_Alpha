@@ -4,7 +4,7 @@
 TagManager:
   serializedVersion: 3
   tags:
-  - Column
+  - Obstacle
   layers:
   - Default
   - TransparentFX
@@ -34,7 +34,7 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - obstacleLayer
   - Column_1
   - Column_2
   - Column_3
