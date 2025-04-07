@@ -46,8 +46,10 @@ public class EnemyAI : MonoBehaviour
         Vector3 forwardDirection = _splineProjector.result.forward;
         float velocityAlongSpline = Vector3.Dot(rb.linearVelocity, forwardDirection);
 
-        if (velocityAlongSpline < 0) model.localScale = new Vector3(-0.5f, 0.5f, 0.5f);
-        else if (velocityAlongSpline > 0) model.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        if (velocityAlongSpline < 0)
+            model.localScale = new Vector3(-0.5f, 0.5f, 0.5f);
+        else if (velocityAlongSpline > 0)
+            model.localScale = new Vector3(0.5f, 0.5f, 0.5f);
 
         if (isFollowingPlayer)
         {
@@ -109,6 +111,18 @@ public class EnemyAI : MonoBehaviour
         if (Mathf.Abs(rb.linearVelocity.y) < 0.1f)
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        Attack attack = other.GetComponent<Attack>();
+        if (attack != null)
+        {
+            Vector3 knockbackDirection = (transform.position - other.transform.position).normalized;
+            float knockbackForce = 10f; 
+            rb.AddForce(knockbackDirection * knockbackForce, ForceMode.Impulse);
+            Debug.Log("Enemy colpito: spinta applicata");
         }
     }
 

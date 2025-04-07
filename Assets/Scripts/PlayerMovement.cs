@@ -106,6 +106,7 @@ public class PlayerMovement : MonoBehaviour
     public bool IsGrounded { get => Physics.CheckBox(_checks.groundCheck.position, _checks.groundCheckSize, Quaternion.identity, _checks.groundLayer); }
     public bool IsFront { get => Physics.CheckBox(_checks.frontCheck.position, _checks.frontCheckSize, Quaternion.identity, _checks.groundLayer); }
     public bool IsBack { get => Physics.CheckBox(_checks.backCheck.position, _checks.backCheckSize, Quaternion.identity, _checks.groundLayer); }
+    public bool IsRunning { get { return Mathf.Abs(moveInput.x) > 0.1f; } }
 
     private void OnValidate()
     {
