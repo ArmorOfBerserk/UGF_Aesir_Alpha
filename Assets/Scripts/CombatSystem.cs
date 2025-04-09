@@ -135,13 +135,41 @@ public class CombatSystem : MonoBehaviour
 
     private void SpawnAttack(float attackPower)
     {
-        var attackObj = Instantiate(attackPrefab, attackPoint.position, attackPoint.rotation);
-        var attackScript = attackObj.GetComponent<Attack>();
+        Quaternion attackRotation = attackPoint.rotation;
+        
+        if (!PlayerMovement.Instance.IsFacingRight)
+        {
+            attackRotation = Quaternion.Euler(attackRotation.eulerAngles.x,
+                                            attackRotation.eulerAngles.y + 180f,
+                                            attackRotation.eulerAngles.z);
+        }
+
+        Vector2 moveInput = PlayerMovement.Instance.MoveInput;
+
+        float verticalAimAngle = 45f;  
+
+        if (moveInput.y > 0.1f)
+        {
+            Debug.Log("attacco orientato verso l'alto");
+            attackRotation = Quaternion.Euler(attackRotation.eulerAngles.x - verticalAimAngle,
+                                            attackRotation.eulerAngles.y,
+                                            attackRotation.eulerAngles.z);
+        }
+        else if (moveInput.y < -0.1f)
+        {
+            Debug.Log("attacco orientato verso il basso");
+            attackRotation = Quaternion.Euler(attackRotation.eulerAngles.x + verticalAimAngle,
+                                            attackRotation.eulerAngles.y,
+                                            attackRotation.eulerAngles.z);
+        }
+
+        GameObject attackObj = Instantiate(attackPrefab, attackPoint.position, attackRotation);
+        Attack attackScript = attackObj.GetComponent<Attack>();
 
         if (attackScript != null)
         {
             attackScript.SetDamage(attackPower);
         }
-        Debug.Log("Attack spawned. Power: " + attackPower);
+        Debug.Log("[SpawnAttack] Attack spawned. Power: " + attackPower);
     }
 }

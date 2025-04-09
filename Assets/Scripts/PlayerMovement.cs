@@ -107,6 +107,17 @@ public class PlayerMovement : MonoBehaviour
     public bool IsFront { get => Physics.CheckBox(_checks.frontCheck.position, _checks.frontCheckSize, Quaternion.identity, _checks.groundLayer); }
     public bool IsBack { get => Physics.CheckBox(_checks.backCheck.position, _checks.backCheckSize, Quaternion.identity, _checks.groundLayer); }
     public bool IsRunning { get { return Mathf.Abs(moveInput.x) > 0.1f; } }
+    public Vector2 MoveInput { get { return moveInput; } }
+
+    public bool IsFacingRight { get {
+            Transform model = transform.Find("adventurer-idle-00/loky.geo");
+            if(model == null)
+            {
+                return true;
+            }
+            return model.localScale.x > 0;
+        }
+    }
 
     private void OnValidate()
     {
@@ -201,7 +212,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (velocityAlongSpline > 0)
         {
-            model.localScale = new Vector3(0.5f,0.5f,0.5f); // Gira il modello a sinistra
+            model.localScale = new Vector3(0.5f,0.5f,0.5f); // Gira il modello a destra
         }
 
 
