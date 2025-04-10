@@ -43,6 +43,16 @@ public class ColumnController : MonoBehaviour
         startY = -50 * gameObject.layer - 28;
     }
 
+    public void AttachPlayer(Transform player){
+        AttachedPlayer = player;
+        AttachedPlayer.parent = _gravityController.transform;
+    }
+
+    public void DetachPlayer(){
+        AttachedPlayer.parent = null;
+        AttachedPlayer = null;
+    }
+
     public IEnumerator GenerateColumn(Vector3 position, Quaternion rotation, ColumnDirection columnDirection){
         ColumnDirection = columnDirection;
         bool isGrounded = PlayerMovement.Instance.IsGrounded;
@@ -61,26 +71,31 @@ public class ColumnController : MonoBehaviour
 
             transform.localScale += new Vector3(0, _generationSpeed * Time.fixedDeltaTime, 0);
 
-            if(AttachedPlayer != null) {
-                AttachedPlayer.localScale = new Vector3(1.111111f, 1, 1.111111f);
-                AttachedPlayer.localPosition += new Vector3(0, _generationSpeed * Time.fixedDeltaTime * 1.5f, 0);
-            }
+            // if(AttachedPlayer != null) {
+            //     AttachedPlayer.localScale = new Vector3(1.111111f, 1, 1.111111f);
+            //     AttachedPlayer.localPosition += new Vector3(0, _generationSpeed * Time.fixedDeltaTime * 1.5f, 0);
+            // }
             
             if(transform.localScale.y >= _lenght){
                 transform.localScale = new Vector3(transform.localScale.x, _lenght, transform.localScale.z);
                 isGenerated = true;
-                StartCoroutine(EnableGravity(isGrounded));
+                StartCoroutine(EnableGravity());
+                // StartCoroutine(EnableGravity(isGrounded));
                 // StartCoroutine(UnexpectedItemInBaggingArea_RemoveThisItemBeforeContinuing());
                 break;
             }
         }
     }
 
-    IEnumerator EnableGravity(bool wasGrounded){
-        if(!(ColumnDirection == ColumnDirection.Up && wasGrounded)){
-            yield return new WaitForSeconds(1);
-            _gravityController.useGravity = true;
-        }
+    // IEnumerator EnableGravity(bool wasGrounded){
+    //     if(!(ColumnDirection == ColumnDirection.Up && wasGrounded)){
+    //         yield return new WaitForSeconds(1);
+    //         _gravityController.useGravity = true;
+    //     }
+    // }
+    IEnumerator EnableGravity(){
+        yield return new WaitForSeconds(1);
+        _gravityController.useGravity = true;
     }
 
     IEnumerator UnexpectedItemInBaggingArea_RemoveThisItemBeforeContinuing(){

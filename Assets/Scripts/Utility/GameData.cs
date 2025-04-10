@@ -1,14 +1,10 @@
 [System.Serializable]
 public class GameData
 {
-    public int level;
-    public int currency;
-    public int[] position;
+    public float[] position;
 
-    public GameData(int level, int currency, int[] position)
+    public GameData(float[] position)
     {
-        this.level = level;
-        this.currency = currency;
         this.position = position;
     }
 }
