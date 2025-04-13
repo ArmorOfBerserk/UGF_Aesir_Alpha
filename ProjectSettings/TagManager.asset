@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 3
   tags:
   - Obstacle
+  - Column
+  - Attack
   layers:
   - Default
   - TransparentFX
@@ -13,8 +15,8 @@ TagManager:
   - Water
   - UI
   - Column
-  - 
-  - 
+  - UpperTrigger
+  - LowerTrigger
   - 
   - 
   - 
@@ -37,7 +39,7 @@ TagManager:
   - obstacleLayer
   - Column_1
   - Column_2
-  - Column_3
+  - 
   m_SortingLayers:
   - name: Default
     uniqueID: 0
