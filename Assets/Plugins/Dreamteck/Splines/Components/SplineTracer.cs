@@ -222,6 +222,7 @@ namespace Dreamteck.Splines
                         RefreshTargets();
                         if (targetRigidbody == null)  throw new MissingComponentException("There is no Rigidbody attached to " + name + " but the Physics mode is set to use one.");
                     }
+                    if(!targetRigidbody.isKinematic)
                     motion.ApplyRigidbody(targetRigidbody);
                     if (onMotionApplied != null) onMotionApplied();
                     break;
