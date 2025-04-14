@@ -1012,7 +1012,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a965df4dc6eb6354e9424a71b166cdc3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneToLoad: TestSaves
+  sceneToLoad: TestSplineScene
   cutsceneController: {fileID: 1901771650}
   clip: {fileID: 32900000, guid: 3fc899087e964eb41859d560ab894b24, type: 3}
 --- !u!114 &1267244523
