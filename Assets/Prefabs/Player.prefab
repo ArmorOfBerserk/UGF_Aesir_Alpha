@@ -250,7 +250,7 @@ MonoBehaviour:
   _checks:
     groundLayer:
       serializedVersion: 2
-      m_Bits: 3758096392
+      m_Bits: 1610612744
     groundCheck: {fileID: 2605334888089592114}
     groundCheckSize: {x: 0.25, y: 0.05, z: 0.25}
     frontCheck: {fileID: 6218264623216691184}
@@ -272,15 +272,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf78690cb296ed646a9cfdf29ce5b0d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  commonValues: {fileID: 11400000, guid: e03238002cff70545a6805018084bd0a, type: 2}
   attackPrefab: {fileID: 0}
   attackPoint: {fileID: 0}
-  _maxColumns: 3
-  groundCheck: {fileID: 0}
-  groundCheckSize: {x: 0.5, y: 0.1, z: 0.5}
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 0
   minAttackDamage: 10
   maxAttackDamage: 200
 --- !u!114 &5909125448545542708
@@ -316,14 +309,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   commonValues: {fileID: 0}
   _columnPrefab: {fileID: 0}
-  colliderDimension: {x: 2, y: 2, z: 2}
   _max_distance: 10
-  detectionLayer:
+  valore_aggiunto_raycast: 0
+  _detectionColumnLayer:
     serializedVersion: 2
     m_Bits: 0
-  _maxColumns: 5
-  _max_columns_distance: 3
-  _vector3Direction: {x: 0, y: -1, z: 0}
+  colliderDimension: {x: 2, y: 2, z: 2}
 --- !u!54 &8224206884525506748
 Rigidbody:
   m_ObjectHideFlags: 0
