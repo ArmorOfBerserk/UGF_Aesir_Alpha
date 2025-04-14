@@ -156,7 +156,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -256,6 +256,63 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!1001 &546642177
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4797112650255880755, guid: f4b9fe84169ffae42a99c2379cba4f00, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4797112650255880755, guid: f4b9fe84169ffae42a99c2379cba4f00, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4797112650255880755, guid: f4b9fe84169ffae42a99c2379cba4f00, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4797112650255880755, guid: f4b9fe84169ffae42a99c2379cba4f00, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4797112650255880755, guid: f4b9fe84169ffae42a99c2379cba4f00, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4797112650255880755, guid: f4b9fe84169ffae42a99c2379cba4f00, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4797112650255880755, guid: f4b9fe84169ffae42a99c2379cba4f00, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4797112650255880755, guid: f4b9fe84169ffae42a99c2379cba4f00, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4797112650255880755, guid: f4b9fe84169ffae42a99c2379cba4f00, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4797112650255880755, guid: f4b9fe84169ffae42a99c2379cba4f00, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5599238376928887020, guid: f4b9fe84169ffae42a99c2379cba4f00, type: 3}
+      propertyPath: m_Name
+      value: Cutscene
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f4b9fe84169ffae42a99c2379cba4f00, type: 3}
 --- !u!1 &568174563
 GameObject:
   m_ObjectHideFlags: 0
@@ -457,9 +514,9 @@ Canvas:
   m_GameObject: {fileID: 577287793}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
+  m_RenderMode: 1
+  m_Camera: {fileID: 47004254}
+  m_PlaneDistance: 10
   m_PixelPerfect: 1
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
@@ -469,7 +526,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -1
   m_TargetDisplay: 0
 --- !u!224 &577287797
 RectTransform:
@@ -955,6 +1012,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a965df4dc6eb6354e9424a71b166cdc3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sceneToLoad: TestSaves
+  cutsceneController: {fileID: 1901771650}
+  clip: {fileID: 32900000, guid: 3fc899087e964eb41859d560ab894b24, type: 3}
 --- !u!114 &1267244523
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1348,6 +1408,17 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
+--- !u!114 &1901771650 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5993695753379789716, guid: f4b9fe84169ffae42a99c2379cba4f00, type: 3}
+  m_PrefabInstance: {fileID: 546642177}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 630bba27c061b5d498ef63b818f600d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1915615643
 GameObject:
   m_ObjectHideFlags: 0
@@ -1704,3 +1775,4 @@ SceneRoots:
   - {fileID: 1858081712}
   - {fileID: 577287797}
   - {fileID: 1915615646}
+  - {fileID: 546642177}

@@ -405,6 +405,7 @@ public class PlayerMovement : MonoBehaviour
             transform.parent = other.transform.parent;
             other.transform.parent.GetComponent<ColumnController2>().AttachedPlayer = transform;
             Debug.Log($"Player agganciato alla colonna!");
+            BlockMovement(true);
         }
     }
 
