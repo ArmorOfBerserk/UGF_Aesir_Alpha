@@ -2188,7 +2188,7 @@
     "m_ObjectId": "ac1af78ca52b449999f94a3c09ffd901",
     "m_Title": "Glowing Edges",
     "m_Position": {
-        "x": -851.9998779296875,
+        "x": -852.0,
         "y": -806.0
     }
 }
@@ -3210,7 +3210,7 @@
     "m_ObjectId": "ff09bc873e2e4bb4b5426806723a5284",
     "m_Title": "World-space Cutoff",
     "m_Position": {
-        "x": -1447.9998779296875,
+        "x": -1448.0,
         "y": 166.0
     }
 }

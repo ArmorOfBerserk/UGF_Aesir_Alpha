@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Dreamteck.Splines;
 using NUnit.Framework;
 using Unity.VisualScripting;
@@ -18,31 +19,36 @@ public class ColumnController2 : MonoBehaviour
     //Spazio checkbox
     [SerializeField] private Transform _checkbox;
     [SerializeField] private Vector3 _checkboxSize;
-
-    [SerializeField] private LayerMask _innerCheckLayer;
-    [SerializeField] private LayerMask _innerCheckLayerGrounded;
     [HideInInspector] public bool isGenerated = false;
 
     [SerializeField] private SearchForContact upperTrigger;
     [SerializeField] private SearchForContact lowerTrigger;
+    [SerializeField] private SearchForContact checkReset;
 
     public Transform AttachedPlayer;
     public Vector3 checkBoxCenterOffset;
     public Vector3 checkBoxHalfExtents;
 
     public bool IsDestroyed { get; private set; }
-    private LayerMask myLayerMask;
-    private LayerMask myLayerMask1;
-    [SerializeField] Vector3 worldCenter;
 
     private Material material;
     private Coroutine coroutine = null;
+
+
+    //TEST
+    private float clearTimer = 0f;
+    private float requiredTime = 0.5f;
+    private bool activated = false;
+
+    [SerializeField] Transform checkAir;
+    [SerializeField] Vector3 checkAirSize;
 
 
 
     void OnEnable()
     {
         lowerTrigger.EnterTrigger += StartMovement;
+        checkReset.ResetColumn += Reset;
         lowerTrigger.EnableGravity += RestoreSituationDefault;
         lowerTrigger.ExitTrigger += FromAirToGround;
     }
@@ -64,9 +70,12 @@ public class ColumnController2 : MonoBehaviour
 
     private void RestoreSituationDefault()
     {
-        _rb.isKinematic = true;
-        _rb.constraints = RigidbodyConstraints.None;
-        _rb.useGravity = false;
+        if (_rb.useGravity && !_rb.isKinematic)
+        {
+            _rb.isKinematic = true;
+            _rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
+            _rb.useGravity = false;
+        }
     }
 
     private void FromAirToGround()
@@ -75,30 +84,92 @@ public class ColumnController2 : MonoBehaviour
         {
             StopCoroutine(coroutine);
             coroutine = null;
-      /*       _rb.isKinematic = false;
-            _rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
-            _rb.useGravity = true; */
+        }
+    }
+
+    void ActivatePhysics()
+    {
+        _rb.isKinematic = false;
+        _rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
+        _rb.useGravity = true;
+
+        Debug.Log("Attivata fisica dopo 0.5s di clear.");
+    }
+
+    bool IsBoxClear()
+    {
+        int selfLayer = gameObject.layer;
+        int otherLayer = lowerTrigger.gameObject.layer;
+
+        int combined = (1 << selfLayer) | (1 << otherLayer);
+
+        LayerMask mask = ~combined;
+
+
+        Vector3 center = checkAir.position;
+        Vector3 halfExtents = checkAirSize * 0.5f;
+        Quaternion rotation = checkAir.rotation;
+
+        Collider[] hitColliders = Physics.OverlapBox(center, halfExtents, rotation, mask);
+
+        if (hitColliders.Length > 0)
+        {
+            List<string> nomiOggetti = new List<string>();
+            foreach (var hitCollider in hitColliders)
+            {
+                nomiOggetti.Add(hitCollider.gameObject.name);
+            }
+
+            string logFinale = "Oggetti trovati nell'area: " + string.Join(", ", nomiOggetti);
+            /* Debug.Log(logFinale); */
         }
 
+
+        return !Physics.CheckBox(center, halfExtents, rotation, mask);
+    }
+
+    void OnDrawGizmos()
+    {
+        int selfLayer = gameObject.layer;
+        int otherLayer = lowerTrigger.gameObject.layer;
+
+        int combined = (1 << selfLayer) | (1 << otherLayer);
+
+        LayerMask mask = combined;
+
+        Vector3 center = checkAir.position;
+        Quaternion rotation = checkAir.rotation;
+
+        Vector3 size = checkAirSize;
+
+
+        Gizmos.color = new Color(0.6f, 0f, 1f, 0.5f); // Viola trasparente
+        Matrix4x4 oldMatrix = Gizmos.matrix;
+        Gizmos.matrix = Matrix4x4.TRS(center, rotation, checkAir.lossyScale);
+        Gizmos.DrawCube(Vector3.zero, size);
+        Gizmos.matrix = oldMatrix;
     }
 
     IEnumerator MoveColumn()
     {
+        //Quando reset parte, FAI ATTENZIONE: Rende solo invisibile, ma esisterà ancora. Bisogna cambiare posizione.
+        checkReset.Reset(true);
         float destinazione = transform.position.y + 4.5f;
         while (true)
         {
             yield return new WaitForFixedUpdate();
             if ((transform.position.y > destinazione - 0.24f && transform.position.y <= destinazione) || Mathf.Approximately(transform.position.y, destinazione))
             {
-                Debug.Log(new Vector3(transform.position.x, destinazione, transform.position.z));
+    
                 transform.position = new Vector3(transform.position.x, destinazione - 0.05f, transform.position.z);
                 break;
             }
             transform.position += new Vector3(0, _generationSpeed * Time.fixedDeltaTime, 0);
         }
-        // Così le colonne potrebbero essere davvero tanto giuste
-        // Però mi torna utile il controllo.
-        /* transform.position += new Vector3(0, 0.045f, 0f); */
+
+        // Se lascio questa cosa, le colonne si separano il "giusto", non andando ad incastrarsi.
+        // Facendo così, quando avrà "isKinematic=false" non farà saltare la seconda.
+        transform.position += new Vector3(0, 0.060f, 0f);
     }
 
     void Awake()
@@ -110,12 +181,6 @@ public class ColumnController2 : MonoBehaviour
     void Start()
     {
         GetComponent<SplineProjector>().spline = commonValues.currentSpline;
-        int myLayer = gameObject.layer; // Prendi il layer dell'oggetto attuale
-        /* myLayerMask = ((1 << 29) | (1 << 30) | (1 << 31)) & ~(1 << myLayer); */
-        myLayerMask = 1 << 9;
-
-        //Va tolto un layer delle colonna 3
-        myLayerMask1 = ((1 << 29) | (1 << 30) | (1 << 31)) & ~(1 << myLayer);
     }
 
     private void SetHeight(float height)
@@ -172,10 +237,6 @@ public class ColumnController2 : MonoBehaviour
 
             if (transform.position.y > myPosition.y + 4.90f || Mathf.Approximately(transform.position.y, myPosition.y + 4.90f))
                 break;
-
-
-
-
         }
 
         GetComponent<BoxCollider>().isTrigger = false;
@@ -193,14 +254,42 @@ public class ColumnController2 : MonoBehaviour
         if (player != null) player.parent = null;
         GetComponent<BoxCollider>().isTrigger = true;
         SetHeight(-4.5f);
+
         if (!_rb.isKinematic)
         {
             _rb.linearVelocity = Vector3.zero;
             _rb.angularVelocity = Vector3.zero;
-            _rb.isKinematic = true;
+
         }
 
+        checkReset.Reset();
+
+        _rb.isKinematic = true;
+        _rb.constraints = RigidbodyConstraints.None | RigidbodyConstraints.FreezeRotation;
+        _rb.useGravity = false;
+
         _splineProjector.spline = commonValues.currentSpline;
+    }
+
+    void FixedUpdate()
+    {
+        
+        if (activated) return;
+
+        if (IsBoxClear())
+        {
+            clearTimer += Time.fixedDeltaTime;
+
+            if (clearTimer >= requiredTime)
+            {
+                ActivatePhysics();
+                activated = true;
+            }
+        }
+        else
+        {
+            clearTimer = 0f; // Reset se qualcosa è sotto
+        }
     }
 
 }

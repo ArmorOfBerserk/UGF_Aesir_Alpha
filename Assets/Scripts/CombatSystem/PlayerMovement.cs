@@ -172,24 +172,6 @@ public class PlayerMovement : MonoBehaviour
         anim.SetLayerWeight(anim.GetLayerIndex("BlinkingLayer"), n);
     }
 
-    /*  IEnumerator CheckIfStuck()
-     {
-         while (true)
-         {
-             yield return new WaitForSeconds(.5f);
-
-             if (Physics.CheckBox(transform.position, new Vector3(0.05f, 0.2f, 0.05f), Quaternion.identity, ~(1 << gameObject.layer)))
-             {
-                 Debug.Log("Stuck");
-                 transform.position += new Vector3(0, 1, 0);
-             }
-
-             if(transform.parent == null){
-                 transform.localScale = Vector3.one;
-             }
-         }
-     } */
-
     void FixedUpdate()
     {
         #region Variables
@@ -199,7 +181,6 @@ public class PlayerMovement : MonoBehaviour
         _forewardTimesSpeed = _splineProjector.result.forward * playerStats.horizontalMaxRunningSpeed;
 
         #endregion
-
 
         #region Horizontal Movement
 
@@ -218,6 +199,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (velocityAlongSpline > 0)
         {
+
             _splineProjector.direction = Spline.Direction.Forward;
             model.localScale = new Vector3(0.5f, 0.5f, 0.5f); // Gira il modello a destra
         }
@@ -243,6 +225,8 @@ public class PlayerMovement : MonoBehaviour
         #region Vertical Movement
         if (wantsToJump)
         {
+            //AGGIUNTO IO
+            BlockMovement(false);
             if (Time.time - _lastTimeGrounded < _coyoteTime)
             {
                 wantsToJump = false;
@@ -385,22 +369,72 @@ public class PlayerMovement : MonoBehaviour
     //     }
     // }
 
+    /*     void OnTriggerEnter(Collider other)
+        {
+
+            if (LayerMask.LayerToName(other.gameObject.layer) == "Column_1" || LayerMask.LayerToName(other.gameObject.layer) == "Column_2")
+            {
+                other.transform.GetComponent<ColumnController>().AttachPlayer(transform);
+            }
+        }
+
+        void OnTriggerExit(Collider other)
+        {
+            if (LayerMask.LayerToName(other.gameObject.layer) == "Column_1" || LayerMask.LayerToName(other.gameObject.layer) == "Column_2")
+            {
+                other.transform.GetComponent<ColumnController>().DetachPlayer();
+            }
+        } */
+
+    /*  void OnCollisionEnter(Collision collision)
+     {
+         if (collision.collider.gameObject.layer == LayerMask.NameToLayer("UpperTrigger") || LayerMask.LayerToName(collision.gameObject.layer) == "Column_1" || LayerMask.LayerToName(collision.gameObject.layer) == "Column_2")
+         {
+             Debug.Log("Collison name " + collision.gameObject.name);
+             // Imposta il parent del player uguale al parent del trigger toccato
+             transform.parent = collision.transform.parent;
+
+             Debug.Log($"Player agganciato a {collision.transform.parent.name}");
+         }
+     } */
+
     void OnTriggerEnter(Collider other)
     {
-        
-        if (LayerMask.LayerToName(other.gameObject.layer) == "Column_1" || LayerMask.LayerToName(other.gameObject.layer) == "Column_2")
+        if (other.gameObject.layer == LayerMask.NameToLayer("UpperTrigger"))
         {
-            other.transform.GetComponent<ColumnController>().AttachPlayer(transform);
+            transform.parent = other.transform.parent;
+            other.transform.parent.GetComponent<ColumnController2>().AttachedPlayer = transform;
+            Debug.Log($"Player agganciato alla colonna!");
         }
     }
 
     void OnTriggerExit(Collider other)
     {
-        if (LayerMask.LayerToName(other.gameObject.layer) == "Column_1" || LayerMask.LayerToName(other.gameObject.layer) == "Column_2")
+        if (other.gameObject.layer == LayerMask.NameToLayer("UpperTrigger"))
         {
-            other.transform.GetComponent<ColumnController>().DetachPlayer();
+            transform.parent = null;
+            other.transform.parent.GetComponent<ColumnController2>().AttachedPlayer = null;
+
+            BlockMovement(false);
+            Debug.Log("Player scollegato dalla colonna");
         }
     }
+
+
+    void BlockMovement(bool value)
+    {
+        if (value)
+        {
+            rb.constraints = RigidbodyConstraints.FreezeAll;
+        }
+        else
+        {
+            rb.constraints = RigidbodyConstraints.None;
+            rb.constraints = RigidbodyConstraints.FreezeRotation;
+
+        }
+    }
+
 
 
     private void OnDrawGizmos()

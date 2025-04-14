@@ -209,9 +209,9 @@ public class ColumnSpawner : MonoBehaviour
         }
     }
 
+    // Serve per scandire ogni quanto posso generare colonne, DA RINONIMARE
     private void test()
     {
         canAttack = true;
-
     }
 }
