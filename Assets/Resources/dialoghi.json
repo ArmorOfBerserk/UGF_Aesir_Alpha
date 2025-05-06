@@ -1,0 +1,6 @@
+{
+    "dialoghi": [
+        {"id": 0, "testo": "Ciao, sono io che parlo!"},
+        {"id": 1, "testo": "Ciao, sono un NPC!"}
+    ]
+}
