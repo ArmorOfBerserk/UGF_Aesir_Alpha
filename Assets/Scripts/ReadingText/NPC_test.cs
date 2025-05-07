@@ -8,6 +8,7 @@ public class NPCDialogoTrigger : MonoBehaviour
     public GameObject dialogoCanvas;
     public TextAsset fileDialoghiJSON;
     public int idDialogo = 1;
+    public string npcID = "";
     public Button frecciaAvanti;
     public Button frecciaIndietro;
 
@@ -32,7 +33,8 @@ public class NPCDialogoTrigger : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            string testo = CaricaTestoPerID(idDialogo);
+            //string testo = CaricaTestoPerID(idDialogo);
+            string testo = CaricaTesto(idDialogo, npcID);
             DividiInPagine(testo);
 
             paginaCorrente = 0;
@@ -53,6 +55,7 @@ public class NPCDialogoTrigger : MonoBehaviour
         }
     }
 
+    /*
     string CaricaTestoPerID(int id)
     {
         if (fileDialoghiJSON == null) return "[Nessun file JSON caricato]";
@@ -62,6 +65,21 @@ public class NPCDialogoTrigger : MonoBehaviour
         foreach (Dialogo d in dati.dialoghi)
         {
             if (d.id == id)
+                return d.testo;
+        }
+
+        return "[Dialogo non trovato]";
+    }*/
+    
+    private string CaricaTesto(int id, string npcName)
+    {
+        if (fileDialoghiJSON == null) return "[Nessun file JSON caricato]";
+
+        Dialoghi dati = JsonUtility.FromJson<Dialoghi>(fileDialoghiJSON.text);
+
+        foreach (Dialogo d in dati.dialoghi)
+        {
+            if (d.id == id && d.npc.ToLower() == npcName.ToLower())
                 return d.testo;
         }
 

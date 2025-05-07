@@ -10,5 +10,6 @@ public class Dialoghi
 public class Dialogo
 {
     public int id;
+    public string npc; // ulteriore sotto-id
     public string testo;
 }

@@ -91,6 +91,7 @@ public class PlayerMovement : MonoBehaviour
     private bool wasFalling = false;
     private bool wasGrounded = false;
     private bool isTouchingWall;
+    private bool isWallLanding;
     #endregion 
 
     #region Cached Variables
@@ -113,7 +114,7 @@ public class PlayerMovement : MonoBehaviour
     {
         get
         {
-            Transform model = transform.Find("adventurer-idle-00/loky.geo");
+            Transform model = transform.Find("adventurer-idle-00/Loky");
             if (model == null)
             {
                 return true;
@@ -166,12 +167,6 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void modifyIdleAnimations(int n)
-    {
-        anim.SetLayerWeight(anim.GetLayerIndex("BreathingLayer"), n);
-        anim.SetLayerWeight(anim.GetLayerIndex("BlinkingLayer"), n);
-    }
-
     void FixedUpdate()
     {
         #region Variables
@@ -195,13 +190,13 @@ public class PlayerMovement : MonoBehaviour
         if (velocityAlongSpline < 0)
         {
             _splineProjector.direction = Spline.Direction.Backward;
-            model.localScale = new Vector3(-0.5f, 0.5f, 0.5f); // Gira il modello a sinistra
+            model.localScale = new Vector3(-originalScale.x, originalScale.y, originalScale.z); // Gira il modello a sinistra
         }
         else if (velocityAlongSpline > 0)
         {
 
             _splineProjector.direction = Spline.Direction.Forward;
-            model.localScale = new Vector3(0.5f, 0.5f, 0.5f); // Gira il modello a destra
+            model.localScale = originalScale; // gira il modello a destra
         }
 
 
@@ -264,63 +259,39 @@ public class PlayerMovement : MonoBehaviour
             rb.AddForce(playerStats.gravity * _splineProjector.result.up, ForceMode.Acceleration);
         }
         #endregion
+        
         #region Animations
 
-        isTouchingWall = IsFront || IsBack;
-        bool isMoving = rb.linearVelocity.x > 0.1f || rb.linearVelocity.z > 0.1f;
-        bool isFalling = rb.linearVelocity.y < 0 && !IsGrounded;
-        bool isJumping = wantsToJump || (!IsGrounded && rb.linearVelocity.y > 0);
+        isTouchingWall = IsFront || IsBack;  // Calcola se il personaggio sta toccando un muro
+        bool isMoving = rb.linearVelocity.x > 0.1f || rb.linearVelocity.z > 0.1f;   // Flag movimento orizzontale
+        bool isFalling = rb.linearVelocity.y < 0 && !IsGrounded;                    // Caduta
+        bool isJumping = wantsToJump || (!IsGrounded && rb.linearVelocity.y > 0);  // Salto
 
-        anim.SetFloat("Speed", Mathf.Abs(rb.linearVelocity.magnitude));
+        // Aggiorna i parametri dell'Animator per il BlendTree o altre transizioni
+        float speedNormalizzata = rb.linearVelocity.magnitude / playerStats.horizontalMaxRunningSpeed;
+        anim.SetFloat("Speed",  Mathf.Clamp01(speedNormalizzata));
         anim.SetBool("IsGrounded", IsGrounded);
         anim.SetBool("IsFalling", isFalling);
         anim.SetBool("IsJumping", isJumping);
         anim.SetBool("isTouchingWall", isTouchingWall);
 
+        // Blocco animazioni quando il personaggio è a terra
         if (IsGrounded)
         {
-            if (!isTouchingWall)
-            {
-                anim.Play("MoveBlendTree");
-            }
-            if (!wasGrounded)
-            {
-                modifyIdleAnimations(0);
-                anim.Play("Landing");
-            }
-            else if (!isMoving)
-            {
-                modifyIdleAnimations(1);
-            }
-            else if (isMoving)
-            {
-                modifyIdleAnimations(0);
-            }
+            isWallLanding = false; // Resetta lo stato Wall_Land quando atterra
+
         }
-        else
+        else // In aria
         {
-            modifyIdleAnimations(0);
-
-            if (isTouchingWall) anim.Play("Wall_Land");
-            if (isJumping && !wasJumping && !anim.GetCurrentAnimatorStateInfo(0).IsName("UpAir"))
+            if (isTouchingWall) 
             {
-                anim.Play("UpAir");
-            }
-            else if (isJumping && anim.GetCurrentAnimatorStateInfo(0).IsName("UpAir"))
-            {
-                anim.Play("UpAirIdle");
-            }
-
-            if (isFalling && !wasFalling && !anim.GetCurrentAnimatorStateInfo(0).IsName("UpAir"))
-            {
-                anim.Play("DownAir");
-            }
-            else if (isFalling && anim.GetCurrentAnimatorStateInfo(0).IsName("DownAir"))
-            {
-                anim.Play("DownAirIdle");
+                if(!isWallLanding) {
+                    isWallLanding = true;
+                }
             }
         }
 
+        // Aggiorna i flag per rilevare i cambi di stato al frame successivo
         wasJumping = isJumping;
         wasFalling = isFalling;
         wasGrounded = IsGrounded;

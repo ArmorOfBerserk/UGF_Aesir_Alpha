@@ -14,17 +14,19 @@ public class CombatSystem : MonoBehaviour
     /* private SplineProjector _splineProjector; */
     private Animator anim;
 
-    // --- Gestione carica attacco ---
+    // --- Gestione carica e durata attacco ---
     private float chargeTime = 0f;
     private float maxChargeTime = 2f;  
     public float minAttackDamage = 10f;
     public float maxAttackDamage = 200f; 
     private bool isCharging = false;
+        private float attackDurationTimer = 0f;
+    [SerializeField] private float maxTime = 1f; // tempo massimo di combo attacco
+    private bool durationOutOf = false;
     
     // Input System - SERVE?
     public InputActions inputActions;
     private InputAction attackAction;
-
    
 
     private void Awake()
@@ -59,6 +61,7 @@ public class CombatSystem : MonoBehaviour
 
     private void OnAttackStarted(InputAction.CallbackContext obj)
     {
+        /*
         if (PlayerMovement.Instance != null && PlayerMovement.Instance.IsRunning)
         {
             isCharging = true;
@@ -69,21 +72,23 @@ public class CombatSystem : MonoBehaviour
         {
             anim.SetBool("IsAttacking", true);
             SpawnAttack(minAttackDamage);
-            anim.Play("Attack_test");
             anim.SetBool("IsAttacking", false);
         }
+        */
+        StartCoroutine(PlayAttackAnimation(minAttackDamage));
     }
-
-    private void OnAttackPerformed(InputAction.CallbackContext obj){} // inutile 
 
     private void OnAttackCanceled(InputAction.CallbackContext obj)
     {
+        /*
         if(isCharging)
             ReleaseAttack();
+        */
     }
 
     private void Update()
     {
+        /*
         if (isCharging)
         {
             chargeTime += Time.deltaTime;
@@ -99,6 +104,23 @@ public class CombatSystem : MonoBehaviour
                 chargeTime = Mathf.Clamp(chargeTime, 0f, maxChargeTime);
             }
         }
+        */
+
+        if (anim.GetBool("IsAttacking")) {
+
+            attackDurationTimer = 0f;
+            durationOutOf = false;
+        }
+        else {
+            attackDurationTimer += Time.deltaTime;
+
+            if( attackDurationTimer >= maxTime) {
+                durationOutOf = true;
+                Debug.Log("sono qui");
+            }
+        }
+        
+        anim.SetBool("DurationOutOf", durationOutOf);
     }
 
     private void ReleaseAttack()
@@ -136,6 +158,7 @@ public class CombatSystem : MonoBehaviour
                                             attackRotation.eulerAngles.y + 180f,
                                             attackRotation.eulerAngles.z);
         }
+        /*
 
         Vector2 moveInput = PlayerMovement.Instance.MoveInput;
 
@@ -155,6 +178,7 @@ public class CombatSystem : MonoBehaviour
                                             attackRotation.eulerAngles.y,
                                             attackRotation.eulerAngles.z);
         }
+        */
 
         GameObject attackObj = Instantiate(attackPrefab, attackPoint.position, attackRotation);
         Attack attackScript = attackObj.GetComponent<Attack>();
@@ -164,5 +188,13 @@ public class CombatSystem : MonoBehaviour
             attackScript.SetDamage(attackPower);
         }
         Debug.Log("[SpawnAttack] Attack spawned. Power: " + attackPower);
+    }
+
+    IEnumerator PlayAttackAnimation(float damage)
+    {
+        anim.SetBool("IsAttacking", true);
+        SpawnAttack(damage);
+        yield return new WaitForSeconds(0.2f); // tempo sufficiente per far partire l'animazione
+        anim.SetBool("IsAttacking", false);
     }
 }
