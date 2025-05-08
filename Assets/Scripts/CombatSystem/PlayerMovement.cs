@@ -84,6 +84,8 @@ public class PlayerMovement : MonoBehaviour
     private float originalVelocity;
     private float velocityReduction;
     private Coroutine _WallJumpReduction;
+    private Coroutine _JumpTimer;
+    private int wallJumping = 0;
     #endregion
 
     #region Animations State variables
@@ -150,7 +152,7 @@ public class PlayerMovement : MonoBehaviour
         _checks.CorrectHalfSize();
 
         InputManager.Instance.OnMove += (move) => moveInput = move;
-        InputManager.Instance.OnJump += () => StartCoroutine(Jump());
+        InputManager.Instance.OnJump += () => Jump();
         anim = GetComponentInChildren<Animator>();
 
         /* StartCoroutine(CheckIfStuck()); */
@@ -164,6 +166,14 @@ public class PlayerMovement : MonoBehaviour
             yield return new WaitUntil(() => _splineProjector.spline == null);
             yield return new WaitUntil(() => _splineProjector.spline != null);
             commonValues.currentSpline = _splineProjector.spline;
+        }
+    }
+
+    IEnumerator Spam(){
+        while (true)
+        {
+            Jump();
+            yield return null;
         }
     }
 
@@ -182,33 +192,32 @@ public class PlayerMovement : MonoBehaviour
         // Ottieni la direzione della spline nella posizione attuale
         Vector3 forwardDirection = _splineProjector.result.forward;
 
-        // Proietta la velocità del player sulla direzione della spline
-        float velocityAlongSpline = Vector3.Dot(rb.linearVelocity, forwardDirection);
-
-
-        // Se il valore è negativo, significa che il player sta andando "all'indietro"
-        if (velocityAlongSpline < 0)
-        {
-            _splineProjector.direction = Spline.Direction.Backward;
-            model.localScale = new Vector3(-originalScale.x, originalScale.y, originalScale.z); // Gira il modello a sinistra
-        }
-        else if (velocityAlongSpline > 0)
-        {
-
-            _splineProjector.direction = Spline.Direction.Forward;
-            model.localScale = originalScale; // gira il modello a destra
-        }
-
-
         if (moveInput.x > 0)
         {
-            _targetVelocity = _forewardTimesSpeed * velocityReduction;
+            if(wallJumping != -1) _targetVelocity = _forewardTimesSpeed * velocityReduction;
+            else _targetVelocity = rb.linearVelocity;
+
+            _splineProjector.direction = Spline.Direction.Forward;
+            model.localScale = new Vector3(0.5f, 0.5f, 0.5f); // Gira il modello a destra
         }
         else if (moveInput.x < 0)
         {
-            _targetVelocity = -_forewardTimesSpeed * velocityReduction;
+            if(wallJumping != 1) _targetVelocity = -_forewardTimesSpeed * velocityReduction;
+            else _targetVelocity = rb.linearVelocity;
+
+            _splineProjector.direction = Spline.Direction.Backward;
+            model.localScale = new Vector3(-0.5f, 0.5f, 0.5f); // Gira il modello a sinistra
         }
-        else _targetVelocity = _zeroVelocity;
+        else {
+            if(IsGrounded)
+            {
+                _targetVelocity = _zeroVelocity;
+            }
+            else
+            {
+                _targetVelocity = rb.linearVelocity;
+            }
+        }
 
         _velocityChange = playerStats.horizontalAcceleration * (_targetVelocity - rb.linearVelocity);
         _velocityChange.y = 0;
@@ -218,30 +227,46 @@ public class PlayerMovement : MonoBehaviour
 
 
         #region Vertical Movement
-        if (wantsToJump)
+        if (wantsToJump && wallJumping == 0)
         {
             //AGGIUNTO IO
             BlockMovement(false);
             if (Time.time - _lastTimeGrounded < _coyoteTime)
             {
                 wantsToJump = false;
-                rb.AddForce(_splineProjector.result.up * (playerStats.jumpStartSpeed - rb.linearVelocity.y), ForceMode.VelocityChange);
+
+                if(Input.GetKey(KeyCode.S)){
+                    Physics.Raycast(transform.position, -_splineProjector.result.up, out RaycastHit hit, 5, LayerMask.GetMask("Ground"));
+                
+                    if(hit.collider != null && hit.collider.GetComponent<PassthroughFloor>() != null){
+                        if(!hit.collider.GetComponent<PassthroughFloor>().isOneWay){
+                            hit.collider.excludeLayers = LayerMask.GetMask("Player");
+                            rb.linearVelocity = new Vector3(rb.linearVelocity.x,0,rb.linearVelocity.z);
+                            rb.AddForce(-_splineProjector.result.up * (playerStats.jumpStartSpeed - rb.linearVelocity.y) * 0.5f, ForceMode.VelocityChange);
+                        }
+                    }
+
+                } else rb.AddForce(_splineProjector.result.up * (playerStats.jumpStartSpeed - rb.linearVelocity.y), ForceMode.VelocityChange);
             }
             else if (IsFront)
             {
                 wantsToJump = false;
-                rb.AddForce((_splineProjector.result.up * (playerStats.jumpStartSpeed - rb.linearVelocity.y)) - _forewardTimesSpeed * 1.25f, ForceMode.VelocityChange);
+                rb.linearVelocity = new Vector3(0,0,0);
+                rb.AddForce((_splineProjector.result.up * (playerStats.jumpStartSpeed - rb.linearVelocity.y)) - _forewardTimesSpeed * .75f, ForceMode.VelocityChange);
 
                 if (_WallJumpReduction != null) StopCoroutine(_WallJumpReduction);
-                _WallJumpReduction = StartCoroutine(WallJumpReduction());
+                StartCoroutine(WallJumpReductionTmp(-1));
+                // _WallJumpReduction = StartCoroutine(WallJumpReduction());
             }
             else if (IsBack)
             {
                 wantsToJump = false;
-                rb.AddForce((_splineProjector.result.up * (playerStats.jumpStartSpeed - rb.linearVelocity.y)) + _forewardTimesSpeed * 1.25f, ForceMode.VelocityChange);
+                rb.linearVelocity = new Vector3(0,0,0);
+                rb.AddForce((_splineProjector.result.up * (playerStats.jumpStartSpeed - rb.linearVelocity.y)) + _forewardTimesSpeed * .75f, ForceMode.VelocityChange);
 
                 if (_WallJumpReduction != null) StopCoroutine(_WallJumpReduction);
-                _WallJumpReduction = StartCoroutine(WallJumpReduction());
+                StartCoroutine(WallJumpReductionTmp(1));
+                // _WallJumpReduction = StartCoroutine(WallJumpReduction());
             }
         }
         else
@@ -255,7 +280,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            // rb.useGravity = false;
+            rb.useGravity = false;
             rb.AddForce(playerStats.gravity * _splineProjector.result.up, ForceMode.Acceleration);
         }
         #endregion
@@ -301,7 +326,14 @@ public class PlayerMovement : MonoBehaviour
         velocity = rb.linearVelocity;
     }
 
-    IEnumerator Jump()
+    void Jump()
+    {
+        if(_JumpTimer != null) StopCoroutine(_JumpTimer);
+
+        _JumpTimer = StartCoroutine(JumpTimer());
+    }
+
+    IEnumerator JumpTimer()
     {
         wantsToJump = true;
         yield return new WaitForSeconds(_jumpBufferTime);
@@ -320,6 +352,14 @@ public class PlayerMovement : MonoBehaviour
         yield return new WaitForFixedUpdate();
         velocityReduction = 1;
         _WallJumpReduction = null;
+    }
+
+    IEnumerator WallJumpReductionTmp(int direction)
+    {
+        yield return new WaitForFixedUpdate();
+        wallJumping = direction;
+        yield return new WaitUntil(() => rb.linearVelocity.y <= 0);
+        wallJumping = 0;
     }
 
     // void OnCollisionStay(Collision collision)

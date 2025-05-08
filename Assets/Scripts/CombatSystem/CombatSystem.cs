@@ -41,7 +41,7 @@ public class CombatSystem : MonoBehaviour
     private void OnEnable()
     {
         attackAction.started += OnAttackStarted;
-        attackAction.performed += OnAttackPerformed;
+        // attackAction.performed += OnAttackPerformed;
         attackAction.canceled += OnAttackCanceled;
         inputActions.Enable();
     }
@@ -49,7 +49,7 @@ public class CombatSystem : MonoBehaviour
     private void OnDisable()
     {
         attackAction.started -= OnAttackStarted;
-        attackAction.performed -= OnAttackPerformed;
+        // attackAction.performed -= OnAttackPerformed;
         attackAction.canceled -= OnAttackCanceled;
         inputActions.Disable();
     }
