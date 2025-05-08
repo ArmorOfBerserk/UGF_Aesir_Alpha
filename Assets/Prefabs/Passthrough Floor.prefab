@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5914806868886564504}
   - component: {fileID: 230662109521765863}
   - component: {fileID: 598149405093401182}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Passthrough Floor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
