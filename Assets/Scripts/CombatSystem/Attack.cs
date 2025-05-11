@@ -9,14 +9,12 @@ public class Attack : MonoBehaviour
 
     void Start()
     {
-        // Distrugge l'oggetto dopo 'lifetime'
         Destroy(gameObject, lifetime);
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     void Update()
     {
-        // Spostamento dell'attacco
         transform.position += transform.right * speed * Time.deltaTime;
     }
 
@@ -24,16 +22,12 @@ public class Attack : MonoBehaviour
     {
         damage = attackPower;
 
-        // Se vuoi un gradiente di colore tra bianco (attacco debole) e rosso (attacco forte):
         if (spriteRenderer != null)
         {
-            // Normalizzo un po' per far vedere bene il rosso su potenze alte:
             float t = attackPower / 200f; 
             spriteRenderer.color = Color.Lerp(Color.white, Color.red, t);
         }
 
-        // Se invece vuoi un colore BINARIO (bianco fisso = attacco normale, rosso fisso = caricato),
-        // puoi fare ad esempio:
         /*
         if (attackPower <= 10f)
             spriteRenderer.color = Color.white; // attacco base
@@ -42,15 +36,17 @@ public class Attack : MonoBehaviour
         */
     }
 
-
-    // Sarebbe preferibile evitare di distruggere i particellari per avere delle buone prestazioni
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerEnter(Collider other)
     {
-        if (collision.CompareTag("Enemy"))
+        Debug.Log($"[Attack] Trigger con {other.name} (layer {LayerMask.LayerToName(other.gameObject.layer)})");
+
+        var enemy = other.GetComponent<EnemyBase>();
+        if (enemy != null)
         {
-            // Implementa il danno al nemico
-            Debug.Log("Colpito nemico con danno: " + damage);
+            Debug.Log($"[Attack] Colpito nemico: {other.name}, danno={damage}");
+            enemy.TakeDamage(damage);
             Destroy(gameObject);
         }
     }
+
 }
