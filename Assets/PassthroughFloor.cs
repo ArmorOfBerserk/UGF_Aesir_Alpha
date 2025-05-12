@@ -5,6 +5,7 @@ using UnityEngine.UIElements;
 public class PassthroughFloor : MonoBehaviour
 {
     public bool isOneWay = false;
+    public bool isFixed = false;
     public float timerDuration = 2f;
     public float resetTimer = 2f;
     public float rotationSpeed = 10f;
@@ -93,7 +94,7 @@ public class PassthroughFloor : MonoBehaviour
         {
             if (timer != null) StopCoroutine(timer);
 
-            timer = StartCoroutine(Timer());
+            if(!isFixed) timer = StartCoroutine(Timer());
         }
     }
 
