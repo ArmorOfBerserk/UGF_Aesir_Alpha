@@ -117,7 +117,6 @@ public class PlayerMovement : MonoBehaviour
     public bool IsDashing { get { return dashTimer > 0; } }
     public Vector2 MoveInput { get { return moveInput; } }
 
-    public GameObject tmp;
     public bool IsFacingRight
     {
         get
@@ -151,7 +150,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void Start()
     {
-        tmp.SetActive(false);
         _zeroVelocity = Vector3.zero;
         velocityReduction = 1;
 
@@ -203,7 +201,6 @@ public class PlayerMovement : MonoBehaviour
         if (IsDashing)
         {
             wasDashing = true;
-            tmp.SetActive(true);
             rb.AddForce(.5f * Mathf.Sign(moveInput.x) * playerStats.horizontalMaxRunningSpeed * _splineProjector.result.forward, ForceMode.VelocityChange);
             dashTimer -= Time.fixedDeltaTime;
         }
@@ -216,7 +213,6 @@ public class PlayerMovement : MonoBehaviour
             _targetVelocity = _zeroVelocity;
             rb.linearVelocity = new Vector3(0, 0, 0);
             rb.AddForce(new Vector3(0, 0, 0), ForceMode.VelocityChange);
-            tmp.SetActive(false);
             wasDashing = false;
         }
         else if (moveInput.x > 0)
