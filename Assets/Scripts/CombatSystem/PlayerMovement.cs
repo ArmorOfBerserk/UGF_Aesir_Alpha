@@ -77,6 +77,8 @@ public class PlayerMovement : MonoBehaviour
 
     #region Class Variables
     // Variabili necessarie per il corretto funzionamento della classe
+    [SerializeField] private float dashTime = 0.1f;
+
     private Vector2 moveInput;
     private bool wantsToJump;
     private float _lastTimeGrounded;
@@ -86,6 +88,8 @@ public class PlayerMovement : MonoBehaviour
     private Coroutine _WallJumpReduction;
     private Coroutine _JumpTimer;
     private int wallJumping = 0;
+    private float dashTimer = 0;
+    private bool wasDashing = false;
     #endregion
 
     #region Animations State variables
@@ -110,8 +114,10 @@ public class PlayerMovement : MonoBehaviour
     public bool IsFront { get => Physics.CheckBox(_checks.frontCheck.position, _checks.frontCheckSize, Quaternion.identity, _checks.groundLayer); }
     public bool IsBack { get => Physics.CheckBox(_checks.backCheck.position, _checks.backCheckSize, Quaternion.identity, _checks.groundLayer); }
     public bool IsRunning { get { return Mathf.Abs(moveInput.x) > 0.1f; } }
+    public bool IsDashing { get { return dashTimer > 0; } }
     public Vector2 MoveInput { get { return moveInput; } }
 
+    public GameObject tmp;
     public bool IsFacingRight
     {
         get
@@ -145,6 +151,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Start()
     {
+        tmp.SetActive(false);
         _zeroVelocity = Vector3.zero;
         velocityReduction = 1;
 
@@ -153,6 +160,8 @@ public class PlayerMovement : MonoBehaviour
 
         InputManager.Instance.OnMove += (move) => moveInput = move;
         InputManager.Instance.OnJump += () => Jump();
+        InputManager.Instance.OnDash += () => Dash();
+
         anim = GetComponentInChildren<Animator>();
 
         /* StartCoroutine(CheckIfStuck()); */
@@ -180,7 +189,6 @@ public class PlayerMovement : MonoBehaviour
     void FixedUpdate()
     {
         #region Variables
-
         if (IsGrounded) _lastTimeGrounded = Time.time;
 
         _forewardTimesSpeed = _splineProjector.result.forward * playerStats.horizontalMaxRunningSpeed;
@@ -192,7 +200,26 @@ public class PlayerMovement : MonoBehaviour
         // Ottieni la direzione della spline nella posizione attuale
         Vector3 forwardDirection = _splineProjector.result.forward;
 
-        if (moveInput.x > 0)
+        if (IsDashing)
+        {
+            wasDashing = true;
+            tmp.SetActive(true);
+            rb.AddForce(.5f * Mathf.Sign(moveInput.x) * playerStats.horizontalMaxRunningSpeed * _splineProjector.result.forward, ForceMode.VelocityChange);
+            dashTimer -= Time.fixedDeltaTime;
+        }
+        else if (wasDashing){
+            var colliders = GetComponents<Collider>();
+            foreach(var c in colliders){
+                c.excludeLayers = 0;
+            }
+
+            _targetVelocity = _zeroVelocity;
+            rb.linearVelocity = new Vector3(0, 0, 0);
+            rb.AddForce(new Vector3(0, 0, 0), ForceMode.VelocityChange);
+            tmp.SetActive(false);
+            wasDashing = false;
+        }
+        else if (moveInput.x > 0)
         {
             if(wallJumping != -1) _targetVelocity = _forewardTimesSpeed * velocityReduction;
             else _targetVelocity = rb.linearVelocity;
@@ -209,14 +236,10 @@ public class PlayerMovement : MonoBehaviour
             model.localScale = new Vector3(-0.5f, 0.5f, 0.5f); // Gira il modello a sinistra
         }
         else {
-            if(IsGrounded)
-            {
-                _targetVelocity = _zeroVelocity;
-            }
-            else
-            {
-                _targetVelocity = rb.linearVelocity;
-            }
+            
+
+            if(IsGrounded) _targetVelocity = _zeroVelocity;
+            else _targetVelocity = rb.linearVelocity;
         }
 
         _velocityChange = playerStats.horizontalAcceleration * (_targetVelocity - rb.linearVelocity);
@@ -360,6 +383,15 @@ public class PlayerMovement : MonoBehaviour
         wallJumping = direction;
         yield return new WaitUntil(() => rb.linearVelocity.y <= 0);
         wallJumping = 0;
+    }
+
+    void Dash(){
+        dashTimer = dashTime;
+        var colliders = GetComponents<Collider>();
+
+        foreach(var c in colliders){
+            c.excludeLayers = (1 << 29) | (1 << 30);
+        }
     }
 
     // void OnCollisionStay(Collision collision)
