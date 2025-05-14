@@ -8,10 +8,9 @@ public class InputManager : MonoBehaviour
     private InputActions inputActions;
 
     public event Action<Vector2> OnMove;
-    public event Action<Vector2> OnRightStick;
     public event Action OnJump;
+    public event Action<Vector2> OnRightStick;
     public event Action OnAttack;
-    public event Action OnDash;
 
     private void Awake()
     {
@@ -37,8 +36,6 @@ public class InputManager : MonoBehaviour
         inputActions.Player.RightStick.canceled += ctx => OnRightStick?.Invoke(Vector2.zero);
 
         inputActions.Player.Attack.performed += ctx => OnAttack?.Invoke();
-
-        inputActions.Player.Dash.performed += ctx => OnDash?.Invoke();
     }
 
     private void OnEnable()
