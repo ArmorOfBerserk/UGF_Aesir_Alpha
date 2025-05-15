@@ -90,11 +90,12 @@ public class CopycatAI : EnemyBase
     {
         if (knockbackVelocity.sqrMagnitude > 0.01f)
         {
+            velocity.y = 0;
             controller.Move(knockbackVelocity * Time.deltaTime);
-            // smorza gradualmente
-            knockbackVelocity = Vector3.MoveTowards(
-                knockbackVelocity, Vector3.zero, 
-                knockbackDecay * Time.deltaTime);
+
+            knockbackVelocity = Vector3.MoveTowards(knockbackVelocity, Vector3.zero, knockbackDecay * Time.deltaTime);
+
+            return; // evitiamo che il nemico cada dalla spline nel frame della collisione con il proiettile 
         }
 
         attackTimer += Time.deltaTime;

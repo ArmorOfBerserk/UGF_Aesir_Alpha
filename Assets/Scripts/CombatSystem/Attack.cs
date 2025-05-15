@@ -1,7 +1,13 @@
 using UnityEngine;
 
+
+
 public class Attack : MonoBehaviour
 {
+    [Header("Knockback")]
+    [SerializeField] private float knockbackMultiplier = 3f;   // Regola la forza base
+    [SerializeField] private float maxKnockbackForce = 10f;    // Massimo limite
+
     public float speed = 10f;
     public float lifetime = 0.5f;
     private float damage = 10f;
@@ -24,7 +30,7 @@ public class Attack : MonoBehaviour
 
         if (spriteRenderer != null)
         {
-            float t = attackPower / 200f; 
+            float t = attackPower / 200f;
             spriteRenderer.color = Color.Lerp(Color.white, Color.red, t);
         }
 
@@ -46,10 +52,13 @@ public class Attack : MonoBehaviour
         {
             enemy.TakeDamage(damage);
 
-            Vector3 knockDir = (enemy.transform.position - transform.position).normalized;
-            float force    = damage * 3f / enemy.GetWeight();
-            Debug.Log($"[Attack] Knockback force = {force}");
-            enemy.ApplyKnockback(knockDir * force);
+            Vector3 knockDir = transform.right; 
+            knockDir.y = 0f;
+            knockDir.Normalize(); // direzione locale X del proiettile
+            float rawForce = damage * knockbackMultiplier / enemy.GetWeight();
+            float clampedForce = Mathf.Clamp(rawForce, 0f, maxKnockbackForce);
+            Debug.Log($"[Attack] Knockback force = {clampedForce}");
+            enemy.ApplyKnockback(knockDir * clampedForce);
 
             Destroy(gameObject);
         }
