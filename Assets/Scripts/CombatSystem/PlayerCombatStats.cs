@@ -11,8 +11,8 @@ public class PlayerCombatStats : MonoBehaviour
     [SerializeField]
     private SpriteRenderer spriteRenderer;      
     [SerializeField]
-    private Color flashColor = Color.red;       
-
+    private Color flashColor = Color.red;      
+    
     [Header("Energy")]
     [SerializeField]
     private float maxEnergy = 50f;             

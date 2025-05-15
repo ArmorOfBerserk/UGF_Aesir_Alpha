@@ -44,11 +44,8 @@ public class CombatSystem : MonoBehaviour
 
     private void OnEnable()
     {
-        if (playerStats.GetCurrentHealth() > 0f)
-        {
-            attackAction.started += OnAttackStarted;
-            inputActions.Enable();
-        }
+        attackAction.started += OnAttackStarted;
+        inputActions.Enable();
     }
 
     private void OnDisable()
@@ -61,7 +58,6 @@ public class CombatSystem : MonoBehaviour
     
     private void Update()
     {
-        // Se il player muore, disabilita eventi e esci
         if (playerStats.GetCurrentHealth() <= 0f)
         {
             OnDisable();
@@ -95,7 +91,6 @@ public class CombatSystem : MonoBehaviour
             attackDurationTimer += Time.deltaTime;
             if( attackDurationTimer >= maxTime) {
                 durationOutOf = true;
-                Debug.Log("sono qui");
             }
         }
         anim.SetBool("DurationOutOf", durationOutOf);
@@ -118,10 +113,8 @@ public class CombatSystem : MonoBehaviour
         }
         */
 
-        // Non attaccare se il player è morto
         if (playerStats.GetCurrentHealth() <= 0f) return;
 
-        // Inizia coroutine che mostra animazione e genera attacco
         StartCoroutine(PlayAttackAnimation(minAttackDamage));
     }
 

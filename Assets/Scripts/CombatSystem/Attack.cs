@@ -38,15 +38,20 @@ public class Attack : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"[Attack] Trigger con {other.name} (layer {LayerMask.LayerToName(other.gameObject.layer)})");
+        // evita self‐damage
+        if (other.GetComponent<PlayerCombatStats>() != null) return;
 
         var enemy = other.GetComponent<EnemyBase>();
         if (enemy != null)
         {
-            Debug.Log($"[Attack] Colpito nemico: {other.name}, danno={damage}");
             enemy.TakeDamage(damage);
+
+            Vector3 knockDir = (enemy.transform.position - transform.position).normalized;
+            float force    = damage * 3f / enemy.GetWeight();
+            Debug.Log($"[Attack] Knockback force = {force}");
+            enemy.ApplyKnockback(knockDir * force);
+
             Destroy(gameObject);
         }
     }
-
 }

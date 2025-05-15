@@ -6,9 +6,14 @@ public abstract class EnemyBase : MonoBehaviour
 {
     [Header("Stats")]
     [SerializeField]
-    protected float maxHealth = 100f;    
-    protected float currentHealth;       
+    protected float maxHealth = 100f;
+    protected float currentHealth;
     protected bool isInvulnerable = false;
+
+    [Header("Physics")]
+    [SerializeField] protected float enemyWeight  = 5f;
+    protected Vector3 knockbackVelocity;
+    [SerializeField] protected float knockbackDecay = 5f;
 
     [Header("Feedback")]
     [SerializeField]
@@ -24,7 +29,7 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected virtual void Awake()
     {
-        currentHealth = maxHealth;          
+        currentHealth = maxHealth;
         if (spriteRenderer != null)
             originalColor = spriteRenderer.color; // salva colore iniziale
     }
@@ -38,12 +43,18 @@ public abstract class EnemyBase : MonoBehaviour
             return;
 
         currentHealth -= damage;
+
         currentHealth = Mathf.Max(currentHealth, 0f);
 
         StartCoroutine(FlashSprite());
 
         if (currentHealth == 0f)
             Die();
+    }
+
+    public void ApplyKnockback(Vector3 velocity)
+    {
+        knockbackVelocity = velocity;
     }
 
     protected virtual void Die()
@@ -53,7 +64,7 @@ public abstract class EnemyBase : MonoBehaviour
 
     private IEnumerator FlashSprite()
     {
-        isInvulnerable = true; 
+        isInvulnerable = true;
 
         if (spriteRenderer != null)
         {
@@ -67,8 +78,10 @@ public abstract class EnemyBase : MonoBehaviour
             yield return new WaitForSeconds(invulnerabilityDuration);
         }
 
-        isInvulnerable = false; 
+        isInvulnerable = false;
     }
 
     public float GetCurrentHealth() => currentHealth;
+    
+    public float GetWeight() => enemyWeight;
 }
