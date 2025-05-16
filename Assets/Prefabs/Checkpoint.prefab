@@ -121,3 +121,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83a52823d80f48641a5530e2df4093b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  saveCheckpoint: {fileID: 2100000, guid: ef4dbf76b4c152f499f76fa4ee11cdba, type: 2}
+  midLevelCheckpoint: {fileID: 2100000, guid: 1319f3c33cab7da498596f2afe5eea3c, type: 2}
+  shouldSave: 1
