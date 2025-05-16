@@ -90,6 +90,8 @@ public class PlayerMovement : MonoBehaviour
     private int wallJumping = 0;
     private float dashTimer = 0;
     private bool wasDashing = false;
+    private bool canDash = true;
+    private bool wallDash = true;
     #endregion
 
     #region Animations State variables
@@ -106,8 +108,10 @@ public class PlayerMovement : MonoBehaviour
     Vector3 _velocityChange;
     Vector3 _zeroVelocity;
     Vector3 _forewardTimesSpeed;
+    float maxFallingSpeed;
     #endregion
 
+    // Debug
     [SerializeField] private Vector3 velocity;
 
     public bool IsGrounded { get => Physics.CheckBox(_checks.groundCheck.position, _checks.groundCheckSize, Quaternion.identity, _checks.groundLayer); }
@@ -115,6 +119,7 @@ public class PlayerMovement : MonoBehaviour
     public bool IsBack { get => Physics.CheckBox(_checks.backCheck.position, _checks.backCheckSize, Quaternion.identity, _checks.groundLayer); }
     public bool IsRunning { get { return Mathf.Abs(moveInput.x) > 0.1f; } }
     public bool IsDashing { get { return dashTimer > 0; } }
+    public bool IsFalling { get { return rb.linearVelocity.y < 0 && !IsGrounded; } }
     public Vector2 MoveInput { get { return moveInput; } }
 
     public bool IsFacingRight
@@ -187,7 +192,12 @@ public class PlayerMovement : MonoBehaviour
     void FixedUpdate()
     {
         #region Variables
-        if (IsGrounded) _lastTimeGrounded = Time.time;
+        if (IsGrounded)
+        {
+            _lastTimeGrounded = Time.time;
+            canDash = true;
+            wallDash = true;
+        }
 
         _forewardTimesSpeed = _splineProjector.result.forward * playerStats.horizontalMaxRunningSpeed;
 
@@ -221,7 +231,7 @@ public class PlayerMovement : MonoBehaviour
             else _targetVelocity = rb.linearVelocity;
 
             _splineProjector.direction = Spline.Direction.Forward;
-            model.localScale = new Vector3(0.5f, 0.5f, 0.5f); // Gira il modello a destra
+            model.localScale = new Vector3(0.6f, 0.6f, 0.6f); // Gira il modello a destra
         }
         else if (moveInput.x < 0)
         {
@@ -229,7 +239,7 @@ public class PlayerMovement : MonoBehaviour
             else _targetVelocity = rb.linearVelocity;
 
             _splineProjector.direction = Spline.Direction.Backward;
-            model.localScale = new Vector3(-0.5f, 0.5f, 0.5f); // Gira il modello a sinistra
+            model.localScale = new Vector3(-0.6f, 0.6f, 0.6f); // Gira il modello a sinistra
         }
         else {
             
@@ -254,7 +264,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 wantsToJump = false;
 
-                if(Input.GetKey(KeyCode.S)){
+                if(moveInput.y < 0){
                     Physics.Raycast(transform.position, -_splineProjector.result.up, out RaycastHit hit, 5, LayerMask.GetMask("Ground"));
                 
                     if(hit.collider != null && hit.collider.GetComponent<PassthroughFloor>() != null){
@@ -273,6 +283,11 @@ public class PlayerMovement : MonoBehaviour
                 rb.linearVelocity = new Vector3(0,0,0);
                 rb.AddForce((_splineProjector.result.up * (playerStats.jumpStartSpeed - rb.linearVelocity.y)) - _forewardTimesSpeed * .75f, ForceMode.VelocityChange);
 
+                if (wallDash)
+                {
+                    canDash = true;
+                    wallDash = false;
+                }
                 if (_WallJumpReduction != null) StopCoroutine(_WallJumpReduction);
                 StartCoroutine(WallJumpReductionTmp(-1));
                 // _WallJumpReduction = StartCoroutine(WallJumpReduction());
@@ -283,6 +298,11 @@ public class PlayerMovement : MonoBehaviour
                 rb.linearVelocity = new Vector3(0,0,0);
                 rb.AddForce((_splineProjector.result.up * (playerStats.jumpStartSpeed - rb.linearVelocity.y)) + _forewardTimesSpeed * .75f, ForceMode.VelocityChange);
 
+                if (wallDash)
+                {
+                    canDash = true;
+                    wallDash = false;
+                }
                 if (_WallJumpReduction != null) StopCoroutine(_WallJumpReduction);
                 StartCoroutine(WallJumpReductionTmp(1));
                 // _WallJumpReduction = StartCoroutine(WallJumpReduction());
@@ -300,7 +320,18 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             rb.useGravity = false;
-            rb.AddForce(playerStats.gravity * _splineProjector.result.up, ForceMode.Acceleration);
+
+            if(moveInput.y < 0) maxFallingSpeed = playerStats.verticalFastFallingSpeed;
+            else maxFallingSpeed = playerStats.verticalMaxSpeed;
+            
+
+            if(rb.linearVelocity.y < -maxFallingSpeed) rb.linearVelocity = new Vector3(rb.linearVelocity.x, -maxFallingSpeed, rb.linearVelocity.z);
+            else{
+                var force = playerStats.gravity;
+                if(IsFalling) force *= 1.2f;
+                if(moveInput.y < 0) force *= 2;
+                rb.AddForce(force * _splineProjector.result.up, ForceMode.Acceleration);
+            }
         }
         #endregion
         
@@ -382,6 +413,10 @@ public class PlayerMovement : MonoBehaviour
     }
 
     void Dash(){
+        if(!canDash) return;
+
+        canDash = false;
+
         dashTimer = dashTime;
         var colliders = GetComponents<Collider>();
 
