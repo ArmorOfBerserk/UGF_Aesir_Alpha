@@ -2,17 +2,7 @@ using UnityEngine;
 
 public class CheckpointController : MonoBehaviour
 {
-    private void OnTriggerEnter(Collider other) {
-        if (other.CompareTag("Player")) {
-            var pos = other.transform.position;
-            var data = new GameData(new float[] { pos.x, pos.y, pos.z });
-            SaveSystem.SaveGameData(data);
-        }
-    }
-
-
     // #region TEST ONLY
-
     // public void LoadCheckpoint() {
     //     var data = SaveSystem.LoadGameData();
     //     if (data != null) {
@@ -26,6 +16,42 @@ public class CheckpointController : MonoBehaviour
     //         LoadCheckpoint();
     //     }
     // }
-
     // #endregion
+
+    public Material saveCheckpoint;
+    public Material midLevelCheckpoint;
+
+
+    [Tooltip("Se true crea un salvataggio, altrimenti è considerato mid level checkpoint")]
+    [SerializeField] private bool shouldSave = true;
+
+    public static Vector3 LastCheckpointPosition { get; private set; }
+    
+
+    void OnValidate()
+    {
+        if(shouldSave) {
+            GetComponent<Renderer>().material = saveCheckpoint;
+        } else {
+            GetComponent<Renderer>().material = midLevelCheckpoint;
+        }
+    }
+
+    private void Start() {
+        LastCheckpointPosition = Vector3.zero;
+    }
+
+    private void OnTriggerEnter(Collider other) {
+        if (other.CompareTag("Player")) {
+            if(shouldSave){
+                var pos = other.transform.position;
+                var data = new GameData(new float[] { pos.x, pos.y, pos.z });
+                SaveSystem.SaveGameData(data);
+            } 
+
+            LastCheckpointPosition = other.transform.position;
+        } 
+    }
+
+
 }
