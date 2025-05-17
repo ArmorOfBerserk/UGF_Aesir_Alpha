@@ -1,7 +1,5 @@
 using UnityEngine;
 
-
-
 public class Attack : MonoBehaviour
 {
     [Header("Knockback")]
@@ -52,7 +50,7 @@ public class Attack : MonoBehaviour
         {
             enemy.TakeDamage(damage);
 
-            Vector3 knockDir = transform.right; 
+            Vector3 knockDir = transform.right;
             knockDir.y = 0f;
             knockDir.Normalize(); // direzione locale X del proiettile
             float rawForce = damage * knockbackMultiplier / enemy.GetWeight();
@@ -63,4 +61,6 @@ public class Attack : MonoBehaviour
             Destroy(gameObject);
         }
     }
+    
+    public float GetDamage() => damage;
 }

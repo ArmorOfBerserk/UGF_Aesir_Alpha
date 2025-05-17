@@ -24,7 +24,7 @@ public struct CopycatChecks
 [RequireComponent(typeof(CharacterController))]
 public class CopycatAI : EnemyBase
 {
-    // Stati logici dell'AI (utile per il settaggio dell'Animator)
+    // stati logici dell'AI (utile per il settaggio dell'Animator)
     public enum EnemyState
     {
         Calm,               // player troppo lontano, non triggerato 
@@ -75,8 +75,9 @@ public class CopycatAI : EnemyBase
     private float attackTimer = 0f; 
 
 
-    void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         controller = GetComponent<CharacterController>();
         checks.CorrectHalfSize();
     }
@@ -135,7 +136,7 @@ public class CopycatAI : EnemyBase
                 break;
 
             case EnemyState.BladeTransition:
-                // resta fermo durante animazione apertura lame (??)
+                Chase(player.position, runSpeed);
                 break;
 
             case EnemyState.BladeAttack:
@@ -216,10 +217,12 @@ public class CopycatAI : EnemyBase
     void OnTriggerEnter(Collider other)
     {
         // se a collidere è il proiettile cambia stato a TriggeredWalk 
-        var proj = other.GetComponentInParent<Attack>();
-        if (proj != null && currentState < EnemyState.TriggeredWalk)
+        if (other.GetComponentInParent<Attack>() is Attack proj && currentState < EnemyState.TriggeredWalk)
         {
-            TransitionToState(EnemyState.TriggeredWalk);
+            proj = other.GetComponentInParent<Attack>();
+            TakeDamage(proj.GetDamage());
+
+            StartCoroutine(DelayedTransition(EnemyState.TriggeredWalk, 1f));
             return;
         }
 
@@ -244,7 +247,6 @@ public class CopycatAI : EnemyBase
     // transizioni di stato dell'animator e reset parametri
     private void TransitionToState(EnemyState newState)
     {
-        StopAllCoroutines();            // ferma tutte le coroutine in esecuzione
         currentState = newState;
         attackTimer = 0f;               // reset del cooldown di attacco
 
@@ -314,16 +316,22 @@ public class CopycatAI : EnemyBase
         TransitionToState(allHit ? EnemyState.TriggeredRunAttack : EnemyState.BladeAttack);
     }
 
+    private IEnumerator DelayedTransition(EnemyState newState, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        TransitionToState(newState);
+    }
+
     // override di TakeDamage (di enemy base) per applicare moltiplicatori di stato
     public override void TakeDamage(float damage)
     {
         float mul = 1f;
         switch (currentState)
         {
-            case EnemyState.Calm:               mul = calmDamageMul;       break;
-            case EnemyState.Walk:               mul = walkDamageMul;       break;
-            case EnemyState.TriggeredRunAttack: mul = runDamageMul;        break;
-            case EnemyState.BladeAttack:        mul = bladeAttackDamageMul;break;
+            case EnemyState.Calm: mul = calmDamageMul; break;
+            case EnemyState.Walk: mul = walkDamageMul; break;
+            case EnemyState.TriggeredRunAttack: mul = runDamageMul; break;
+            case EnemyState.BladeAttack: mul = bladeAttackDamageMul; break;
         }
         base.TakeDamage(damage * mul);
     }

@@ -132,7 +132,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
@@ -149,5 +149,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86817b03df98d8845b3cffd292cd4c5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  knockbackMultiplier: 3
+  maxKnockbackForce: 10
   speed: 10
   lifetime: 0.5

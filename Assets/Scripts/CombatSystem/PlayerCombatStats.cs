@@ -1,34 +1,23 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class PlayerCombatStats : MonoBehaviour
 {
     [Header("Health")]
-    [SerializeField]
-    private float maxHealth = 100f;               
-    [SerializeField]
-    private float invulnerabilityDuration = 0.5f;
-    [SerializeField]
-    private SpriteRenderer spriteRenderer;      
-    [SerializeField]
-    private Color flashColor = Color.red;      
-    
-    [Header("Energy")]
-    [SerializeField]
-    private float maxEnergy = 50f;             
-    [SerializeField]
-    private float energyRechargeRate = 10f;    
-    private float currentHealth;  
-    private float currentEnergy;  
-    private bool isInvulnerable = false;
-    private Color originalColor;       
+    [SerializeField] private float maxHealth = 100f;
+    [SerializeField] private float invulnerabilityDuration = 1f;
 
-    void Awake()
+    [Header("Energy")]
+    [SerializeField] private float maxEnergy = 50f;
+    [SerializeField] private float energyRechargeRate = 10f;
+    private float currentHealth;
+    private float currentEnergy;
+    private bool isInvulnerable = false;
+    private void Awake()
     {
-        currentHealth = maxHealth; 
-        currentEnergy = maxEnergy;  
-        if (spriteRenderer != null)
-            originalColor = spriteRenderer.color; 
+        currentHealth = maxHealth;
+        currentEnergy = maxEnergy;
     }
 
     void Update()
@@ -57,7 +46,7 @@ public class PlayerCombatStats : MonoBehaviour
     public bool UseEnergy(float amount)
     {
         if (currentEnergy < amount)
-            return false; 
+            return false;
 
         currentEnergy -= amount;
         Debug.Log($"[PlayerStats] Energia spesa: {amount}, Energia rimanente: {currentEnergy}");
@@ -81,17 +70,26 @@ public class PlayerCombatStats : MonoBehaviour
 
     private IEnumerator FlashSprite()
     {
-        isInvulnerable = true; 
+        isInvulnerable = true;
 
-        if (spriteRenderer != null)
+        var allRends = GetComponentsInChildren<Renderer>(true);
+        var rends = new List<Renderer>();
+        foreach (var r in allRends)
+            if (r.gameObject.name != "adventurer-idle-00") // escludo adventurer-idle altrimenti ritorna visibile anche lui 
+                rends.Add(r);
+
+        int flashes = 4;
+        float step = invulnerabilityDuration / (flashes * 2);
+
+        for (int i = 0; i < flashes; i++)
         {
-            spriteRenderer.color = flashColor;            
-            yield return new WaitForSeconds(invulnerabilityDuration);
-            spriteRenderer.color = originalColor;        
-        }
-        else
-        {
-            yield return new WaitForSeconds(invulnerabilityDuration);
+            // disattivo il render
+            foreach (var r in rends) r.enabled = false;
+            yield return new WaitForSeconds(step);
+
+            // attivo il render 
+            foreach (var r in rends) r.enabled = true;
+            yield return new WaitForSeconds(step);
         }
 
         isInvulnerable = false;

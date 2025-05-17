@@ -1,12 +1,12 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 // Classe base astratta per tutti i nemici, gestisce salute, invulnerabilità (VINCENZO)
 public abstract class EnemyBase : MonoBehaviour
 {
     [Header("Stats")]
-    [SerializeField]
-    protected float maxHealth = 100f;
+    [SerializeField] protected float maxHealth = 100f;
     protected float currentHealth;
     protected bool isInvulnerable = false;
 
@@ -16,28 +16,18 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] protected float knockbackDecay = 5f;
 
     [Header("Feedback")]
-    [SerializeField]
-    private float invulnerabilityDuration = 0.5f;
-
-    [SerializeField]
-    private SpriteRenderer spriteRenderer;   // Renderer per il flash visivo
-
-    [SerializeField]
-    private Color flashColor = Color.red;     // colore di flash quando subisce danno
-    private Color originalColor;               // colore originale da ripristinare
-
+    [SerializeField] private float invulnerabilityDuration = 1f;
 
     protected virtual void Awake()
     {
         currentHealth = maxHealth;
-        if (spriteRenderer != null)
-            originalColor = spriteRenderer.color; // salva colore iniziale
     }
-
 
     // metodo da ovveridare in copycat 
     public virtual void TakeDamage(float damage)
     {
+        Debug.Log($"[EnemyBase] TakeDamage invocato con {damage}");
+
         // se è già invulnerabile o morto, ignora il danno
         if (isInvulnerable || currentHealth <= 0f)
             return;
@@ -64,22 +54,32 @@ public abstract class EnemyBase : MonoBehaviour
 
     private IEnumerator FlashSprite()
     {
+        Debug.Log($"[EnemyBase] FLASH START su {name}");
         isInvulnerable = true;
 
-        if (spriteRenderer != null)
-        {
-            spriteRenderer.color = flashColor;
-            yield return new WaitForSeconds(invulnerabilityDuration);
+        // prendi tutti i renderer
+        var rends = GetComponentsInChildren<Renderer>(true);
+        Debug.Log($"[EnemyBase] trovati {rends.Length} renderer per {name}");
 
-            spriteRenderer.color = originalColor;
-        }
-        else
+        foreach (var r in rends)
+            Debug.Log($"[EnemyBase] renderer: {r.gameObject.name} ({r.GetType().Name})");
+
+        
+        int flashes = 4;
+        float step = invulnerabilityDuration / (flashes * 2);
+
+        for (int i = 0; i < flashes; i++)
         {
-            yield return new WaitForSeconds(invulnerabilityDuration);
+            foreach (var r in rends) r.enabled = false;
+            yield return new WaitForSeconds(step);
+            foreach (var r in rends) r.enabled = true;
+            yield return new WaitForSeconds(step);
         }
 
         isInvulnerable = false;
+        Debug.Log($"[EnemyBase] FLASH END su {name}");
     }
+
 
     public float GetCurrentHealth() => currentHealth;
     
