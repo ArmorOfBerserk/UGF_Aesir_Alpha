@@ -2,6 +2,10 @@ using UnityEngine;
 
 public class Attack : MonoBehaviour
 {
+    [Header("Knockback")]
+    [SerializeField] private float knockbackMultiplier = 3f;   // Regola la forza base
+    [SerializeField] private float maxKnockbackForce = 10f;    // Massimo limite
+
     public float speed = 10f;
     public float lifetime = 0.5f;
     private float damage = 10f;
@@ -9,14 +13,12 @@ public class Attack : MonoBehaviour
 
     void Start()
     {
-        // Distrugge l'oggetto dopo 'lifetime'
         Destroy(gameObject, lifetime);
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     void Update()
     {
-        // Spostamento dell'attacco
         transform.position += transform.right * speed * Time.deltaTime;
     }
 
@@ -24,16 +26,12 @@ public class Attack : MonoBehaviour
     {
         damage = attackPower;
 
-        // Se vuoi un gradiente di colore tra bianco (attacco debole) e rosso (attacco forte):
         if (spriteRenderer != null)
         {
-            // Normalizzo un po' per far vedere bene il rosso su potenze alte:
-            float t = attackPower / 200f; 
+            float t = attackPower / 200f;
             spriteRenderer.color = Color.Lerp(Color.white, Color.red, t);
         }
 
-        // Se invece vuoi un colore BINARIO (bianco fisso = attacco normale, rosso fisso = caricato),
-        // puoi fare ad esempio:
         /*
         if (attackPower <= 10f)
             spriteRenderer.color = Color.white; // attacco base
@@ -42,15 +40,27 @@ public class Attack : MonoBehaviour
         */
     }
 
-
-    // Sarebbe preferibile evitare di distruggere i particellari per avere delle buone prestazioni
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerEnter(Collider other)
     {
-        if (collision.CompareTag("Enemy"))
+        // evita self‐damage
+        if (other.GetComponent<PlayerCombatStats>() != null) return;
+
+        var enemy = other.GetComponent<EnemyBase>();
+        if (enemy != null)
         {
-            // Implementa il danno al nemico
-            Debug.Log("Colpito nemico con danno: " + damage);
+            enemy.TakeDamage(damage);
+
+            Vector3 knockDir = transform.right;
+            knockDir.y = 0f;
+            knockDir.Normalize(); // direzione locale X del proiettile
+            float rawForce = damage * knockbackMultiplier / enemy.GetWeight();
+            float clampedForce = Mathf.Clamp(rawForce, 0f, maxKnockbackForce);
+            Debug.Log($"[Attack] Knockback force = {clampedForce}");
+            enemy.ApplyKnockback(knockDir * clampedForce);
+
             Destroy(gameObject);
         }
     }
+    
+    public float GetDamage() => damage;
 }

@@ -335,7 +335,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""38db2b2c-c68e-4857-a8ae-c8f20f85f9cd"",
-                    ""path"": ""<Keyboard>/#(Z)"",
+                    ""path"": ""<Keyboard>/Z"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",

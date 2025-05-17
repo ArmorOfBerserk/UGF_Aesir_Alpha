@@ -4,36 +4,40 @@ using Dreamteck.Splines;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+// classe che gestisce il sistema di combattimento del player: spawn di attacchi, animazioni e interazione col PlayerCombatStats (salute/energia).
 public class CombatSystem : MonoBehaviour
 {
-    /* [SerializeField] private CommonValues commonValues; */
-    [SerializeField] public GameObject attackPrefab;
-    [SerializeField] public Transform attackPoint;
+    [Header("References")]
+    [SerializeField] public GameObject attackPrefab;    // prefab dell'oggetto con script attack 
+    [SerializeField] public Transform attackPoint;     
     /* [SerializeField] private int _maxColumns = 5; */
-
     /* private SplineProjector _splineProjector; */
-    private Animator anim;
 
-    // --- Gestione carica e durata attacco ---
-    private float chargeTime = 0f;
-    private float maxChargeTime = 2f;  
-    public float minAttackDamage = 10f;
-    public float maxAttackDamage = 200f; 
-    private bool isCharging = false;
-        private float attackDurationTimer = 0f;
-    [SerializeField] private float maxTime = 1f; // tempo massimo di combo attacco
-    private bool durationOutOf = false;
-    
-    // Input System - SERVE?
-    public InputActions inputActions;
-    private InputAction attackAction;
-   
+    private Animator anim;         
+    private PlayerCombatStats playerStats;  // riferimento allo script salute/energia
+
+    // --- Gestione caricamento e durata dell'animazione di attacco ---
+    private float chargeTime = 0f;     // tempo di caricamento attacco (non usato in versione base) NON IN USO 
+    private float maxChargeTime = 2f;  // tempo massimo per caricamento NON IN USO 
+    public float minAttackDamage = 10f; // danno minimo dell'attacco 
+    public float maxAttackDamage = 20f; // danno massimo dell'attacco caricato NON IN USO 
+
+    // Variabili per limitare durata combo / animazione
+    private float attackDurationTimer = 0f;
+    [SerializeField] private float maxTime = 1f;       // durata massima dell'animazione di attacco
+    private bool durationOutOf = false; // Flag: animazione durata conclusa
+
+    // Input System
+    public InputActions inputActions; 
+    private InputAction attackAction; 
 
     private void Awake()
     {
+        playerStats = GetComponent<PlayerCombatStats>();
+        anim = GetComponentInChildren<Animator>();
+
         inputActions = new InputActions();
         attackAction = inputActions.Player.Attack;
-
         /* _splineProjector = GetComponent<SplineProjector>(); */
         /* commonValues.currentSpline = _splineProjector.spline; */
     }
@@ -41,53 +45,24 @@ public class CombatSystem : MonoBehaviour
     private void OnEnable()
     {
         attackAction.started += OnAttackStarted;
-        // attackAction.performed += OnAttackPerformed;
-        attackAction.canceled += OnAttackCanceled;
         inputActions.Enable();
     }
 
     private void OnDisable()
     {
         attackAction.started -= OnAttackStarted;
-        // attackAction.performed -= OnAttackPerformed;
-        attackAction.canceled -= OnAttackCanceled;
         inputActions.Disable();
     }
-
-    private void Start()
-    {
-        anim = GetComponentInChildren<Animator>();
-    }
-
-    private void OnAttackStarted(InputAction.CallbackContext obj)
-    {
-        /*
-        if (PlayerMovement.Instance != null && PlayerMovement.Instance.IsRunning)
-        {
-            isCharging = true;
-            chargeTime = 0f;
-            anim.SetBool("IsAttacking", true);
-        }
-        else
-        {
-            anim.SetBool("IsAttacking", true);
-            SpawnAttack(minAttackDamage);
-            anim.SetBool("IsAttacking", false);
-        }
-        */
-        StartCoroutine(PlayAttackAnimation(minAttackDamage));
-    }
-
-    private void OnAttackCanceled(InputAction.CallbackContext obj)
-    {
-        /*
-        if(isCharging)
-            ReleaseAttack();
-        */
-    }
-
+    
+    
+    
     private void Update()
     {
+        if (playerStats.GetCurrentHealth() <= 0f)
+        {
+            OnDisable();
+            return;
+        }
         /*
         if (isCharging)
         {
@@ -106,58 +81,64 @@ public class CombatSystem : MonoBehaviour
         }
         */
 
-        if (anim.GetBool("IsAttacking")) {
-
+        if (anim.GetBool("IsAttacking"))
+        {
             attackDurationTimer = 0f;
             durationOutOf = false;
         }
-        else {
+        else
+        {
             attackDurationTimer += Time.deltaTime;
-
             if( attackDurationTimer >= maxTime) {
                 durationOutOf = true;
-                Debug.Log("sono qui");
             }
         }
-        
         anim.SetBool("DurationOutOf", durationOutOf);
+    }
+
+    private void OnAttackStarted(InputAction.CallbackContext obj)
+    {
+        /*
+        if (PlayerMovement.Instance != null && PlayerMovement.Instance.IsRunning)
+        {
+            isCharging = true;
+            chargeTime = 0f;
+            anim.SetBool("IsAttacking", true);
+        }
+        else
+        {
+            anim.SetBool("IsAttacking", true);
+            SpawnAttack(minAttackDamage);
+            anim.SetBool("IsAttacking", false);
+        }
+        */
+
+        if (playerStats.GetCurrentHealth() <= 0f) return;
+
+        StartCoroutine(PlayAttackAnimation(minAttackDamage));
     }
 
     private void ReleaseAttack()
     {
-        isCharging = false;
-        if (PlayerMovement.Instance == null || !PlayerMovement.Instance.IsRunning)
-        {
-            SpawnAttack(minAttackDamage);
-        }
-        else
+        float damage = minAttackDamage;
+
+        if (PlayerMovement.Instance != null && PlayerMovement.Instance.IsRunning)
         {
             if (!PlayerMovement.Instance.IsGrounded && chargeTime >= 1f)
-            {
-                SpawnAttack(minAttackDamage);
-            }
+                damage = minAttackDamage;
             else
-            {
-                float attackPower = minAttackDamage + (chargeTime / maxChargeTime) * (maxAttackDamage - minAttackDamage);
-                SpawnAttack(attackPower);
-            }
+                damage = minAttackDamage + (chargeTime / maxChargeTime) * (maxAttackDamage - minAttackDamage);
         }
-
-        chargeTime = 0f; 
-        anim.Play("Attack_test");
+        SpawnAttack(damage);
+        chargeTime = 0f;
         anim.SetBool("IsAttacking", false);
     }
+
 
     private void SpawnAttack(float attackPower)
     {
         Quaternion attackRotation = attackPoint.rotation;
-        
-        if (!PlayerMovement.Instance.IsFacingRight)
-        {
-            attackRotation = Quaternion.Euler(attackRotation.eulerAngles.x,
-                                            attackRotation.eulerAngles.y + 180f,
-                                            attackRotation.eulerAngles.z);
-        }
+
         /*
 
         Vector2 moveInput = PlayerMovement.Instance.MoveInput;
@@ -180,21 +161,26 @@ public class CombatSystem : MonoBehaviour
         }
         */
 
+        // Inverti rotazione se il player guarda a sinistra
+        if (PlayerMovement.Instance != null && !PlayerMovement.Instance.IsFacingRight)
+            attackRotation = Quaternion.Euler(
+                attackRotation.eulerAngles.x,
+                attackRotation.eulerAngles.y + 180f,
+                attackRotation.eulerAngles.z);
+
         GameObject attackObj = Instantiate(attackPrefab, attackPoint.position, attackRotation);
         Attack attackScript = attackObj.GetComponent<Attack>();
-
         if (attackScript != null)
-        {
             attackScript.SetDamage(attackPower);
-        }
-        Debug.Log("[SpawnAttack] Attack spawned. Power: " + attackPower);
+
+        Debug.Log($"[CombatSystem] Attack spawned. Power: {attackPower}");
     }
 
-    IEnumerator PlayAttackAnimation(float damage)
+    private IEnumerator PlayAttackAnimation(float damage)
     {
-        anim.SetBool("IsAttacking", true);
-        SpawnAttack(damage);
-        yield return new WaitForSeconds(0.2f); // tempo sufficiente per far partire l'animazione
+        anim.SetBool("IsAttacking", true); 
+        SpawnAttack(damage);          
+        yield return new WaitForSeconds(0.2f);
         anim.SetBool("IsAttacking", false);
     }
 }

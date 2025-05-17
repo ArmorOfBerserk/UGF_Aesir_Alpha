@@ -7,6 +7,8 @@ TagManager:
   - Obstacle
   - Column
   - Attack
+  - Enemy
+  - PlayerAttack
   layers:
   - Default
   - TransparentFX
@@ -19,8 +21,8 @@ TagManager:
   - LowerTrigger
   - CheckReset
   - Player
-  - 
-  - 
+  - Enemy
+  - Attack
   - 
   - 
   - 
