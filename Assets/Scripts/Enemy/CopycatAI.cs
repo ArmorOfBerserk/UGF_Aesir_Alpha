@@ -38,7 +38,12 @@ public class CopycatAI : EnemyBase
     [Header("Movement Param")]
     [SerializeField] private float walkSpeed = 1f;  
     [SerializeField] private float runSpeed = 5f; 
-    [SerializeField] private float accelSmooth = 5f; 
+    [SerializeField] private float accelSmooth = 5f;
+
+    [Header("Detect Player")]
+    public float chaseRange = 10f;
+    public float eyeHeight = 1.5f;
+
 
     [Header("Checks & Gravity")]
     [SerializeField] private CopycatChecks checks; 
@@ -89,6 +94,14 @@ public class CopycatAI : EnemyBase
 
     void Update()
     {
+        // se vedo il player mentre sto in Calm o Walk, passo a TriggeredWalk
+        if ((currentState == EnemyState.Calm || currentState == EnemyState.Walk) && player != null && SeePlayer())
+        {
+            TransitionToState(EnemyState.TriggeredWalk);
+            return;
+        }
+
+
         if (knockbackVelocity.sqrMagnitude > 0.01f)
         {
             velocity.y = 0;
@@ -190,29 +203,6 @@ public class CopycatAI : EnemyBase
         }
     }
 
-    // danno da contatto
-    /*
-    void OnControllerColliderHit(ControllerColliderHit hit)
-    {
-        if (hit.gameObject.CompareTag("Player"))
-        {
-            float damage = 0f;
-            switch (currentState)
-            {
-                case EnemyState.TriggeredWalk:      damage = contactDamageWalk;  break;
-                case EnemyState.TriggeredRunAttack: damage = contactDamageRun;   break;
-                case EnemyState.BladeAttack:        damage = contactDamageBlade; break;
-            }
-            var ps = hit.gameObject.GetComponent<PlayerCombatStats>();
-            if (ps != null && damage > 0f)
-            {
-                ps.TakeDamage(damage);
-                Debug.Log($"[CopycatAI] Contact hits player: damage={damage}");
-            }
-        }
-    }
-    */
-
     // trigger con proiettile e contatto player
     void OnTriggerEnter(Collider other)
     {
@@ -252,7 +242,6 @@ public class CopycatAI : EnemyBase
 
         // reset dei trigger e booleani dell'animator
         animator.ResetTrigger("EnterBladeTransition");
-        animator.ResetTrigger("Attack");
         animator.SetBool("IsCalm", false);
         animator.SetBool("IsWalking", false);
         animator.SetBool("IsTriggeredWalk", false);
@@ -288,6 +277,24 @@ public class CopycatAI : EnemyBase
                     () => TransitionToState(EnemyState.TriggeredRunAttack)));
                 break;
         }
+    }
+
+    private bool SeePlayer()
+    {
+        // raycast altezza degli occhi 
+        Vector3 origin = transform.position + Vector3.up * eyeHeight;
+        Vector3 target = player.position + Vector3.up * eyeHeight;
+        
+        float dist = Vector3.Distance(origin, target);
+        if (dist > chaseRange) return false;
+
+        Ray ray = new Ray(origin, (target - origin));
+        if (Physics.Raycast(ray, out RaycastHit hit, chaseRange))
+        {
+            if (hit.transform == player)
+                return true;
+        }
+        return false;
     }
 
     private IEnumerator TimerThen(float delay, System.Action callback)

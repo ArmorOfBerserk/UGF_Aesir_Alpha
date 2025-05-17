@@ -26,7 +26,6 @@ public abstract class EnemyBase : MonoBehaviour
     // metodo da ovveridare in copycat 
     public virtual void TakeDamage(float damage)
     {
-        Debug.Log($"[EnemyBase] TakeDamage invocato con {damage}");
 
         // se è già invulnerabile o morto, ignora il danno
         if (isInvulnerable || currentHealth <= 0f)
@@ -54,16 +53,10 @@ public abstract class EnemyBase : MonoBehaviour
 
     private IEnumerator FlashSprite()
     {
-        Debug.Log($"[EnemyBase] FLASH START su {name}");
         isInvulnerable = true;
 
         // prendi tutti i renderer
         var rends = GetComponentsInChildren<Renderer>(true);
-        Debug.Log($"[EnemyBase] trovati {rends.Length} renderer per {name}");
-
-        foreach (var r in rends)
-            Debug.Log($"[EnemyBase] renderer: {r.gameObject.name} ({r.GetType().Name})");
-
         
         int flashes = 4;
         float step = invulnerabilityDuration / (flashes * 2);
@@ -77,9 +70,7 @@ public abstract class EnemyBase : MonoBehaviour
         }
 
         isInvulnerable = false;
-        Debug.Log($"[EnemyBase] FLASH END su {name}");
     }
-
 
     public float GetCurrentHealth() => currentHealth;
     
