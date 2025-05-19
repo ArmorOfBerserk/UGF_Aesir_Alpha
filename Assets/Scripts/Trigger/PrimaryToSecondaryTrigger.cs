@@ -125,6 +125,8 @@ public struct SecondarySplineData
 
 public class PrimaryToSecondaryTrigger : MonoBehaviour
 {
+    private Vector2 moveInput;
+
     KeyCode[] KeyCodes = { KeyCode.W, KeyCode.A, KeyCode.D, KeyCode.S };
     [SerializeField] private CustomEvent _triggerUp;
     [SerializeField] private CustomEvent _triggerDown;
@@ -135,6 +137,8 @@ public class PrimaryToSecondaryTrigger : MonoBehaviour
     private bool _isInsideTrigger = false;
     [SerializeField] private ChoosenKey _choosenKey = ChoosenKey.W;
     private Transform _triggerTransform;
+    
+    public Vector2 MoveInput { get { return moveInput; } }
 
     private void HandleSwitchToPrimarySpline(Transform transform)
     {
