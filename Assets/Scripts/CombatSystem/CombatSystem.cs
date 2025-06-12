@@ -29,7 +29,11 @@ public class CombatSystem : MonoBehaviour
 
     // Input System
     public InputActions inputActions; 
-    private InputAction attackAction; 
+    private InputAction attackAction;
+
+    [Header("Anti-spam settings")]
+    [SerializeField] private float attackCooldown = 0.5f; // cooldown tra gli attacchi (secondi)
+    private float lastAttackTime = -Mathf.Infinity;
 
     private void Awake()
     {
@@ -115,6 +119,12 @@ public class CombatSystem : MonoBehaviour
 
         if (playerStats.GetCurrentHealth() <= 0f) return;
 
+        if (Time.time < lastAttackTime + attackCooldown) {
+            Debug.Log("Attack ignored because of cooldown time");
+            return;
+        }
+        lastAttackTime = Time.time;
+
         StartCoroutine(PlayAttackAnimation(minAttackDamage));
     }
 
@@ -178,8 +188,8 @@ public class CombatSystem : MonoBehaviour
 
     private IEnumerator PlayAttackAnimation(float damage)
     {
-        anim.SetBool("IsAttacking", true); 
-        SpawnAttack(damage);          
+        anim.SetBool("IsAttacking", true);
+        SpawnAttack(damage);
         yield return new WaitForSeconds(0.2f);
         anim.SetBool("IsAttacking", false);
     }

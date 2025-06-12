@@ -44,6 +44,10 @@ public class CopycatAI : EnemyBase
     public float chaseRange = 10f;
     public float eyeHeight = 1.5f;
 
+    [Header("Jump Obstacles Settings")]
+    [SerializeField] private LayerMask obstacleLayer; // layer degli ostacoli (non include quello del player)
+    [SerializeField] private float jumpForce = 5f;     // velocità iniziale di salto
+
 
     [Header("Checks & Gravity")]
     [SerializeField] private CopycatChecks checks; 
@@ -55,6 +59,7 @@ public class CopycatAI : EnemyBase
     [SerializeField] private float contactDamageBlade = 30f; // danno da BladeAttack
     [SerializeField] private float attackRange = 1.5f; // raggio per attacco a distanza
     [SerializeField] private float attackCooldown = 2f;   // cooldown tra un attacco e l'altro (evita spam)
+    private bool bladeHitDuringTransition =  false;   // flag per sapere se copycat ha colpito il player durante l'apertura delle lame
 
     [Header("Damage Multipliers")] // danno inflitto dal player 
     [Range(0f,1f)] [SerializeField] private float calmDamageMul = 1f;
@@ -125,6 +130,27 @@ public class CopycatAI : EnemyBase
             Quaternion.identity,
             checks.groundLayer);
 
+        bool obstacleDetected = false;
+        var hits = Physics.OverlapBox(
+            checks.frontCheck.position,
+            checks.frontCheckSize,
+            Quaternion.identity,
+            obstacleLayer);
+        foreach (var h in hits)
+        {
+            if (h.GetComponentInParent<PlayerCombatStats>() == null)
+            {
+                obstacleDetected = true;
+                break;
+            }
+        }
+
+        // se sono a terra e c'è un ostacolo, salto
+        if (isGrounded && obstacleDetected && velocity.y <= 0f)
+        {
+            velocity.y = jumpForce;
+        }
+
         if (isGrounded && velocity.y < 0f)
             velocity.y = -2f;
         velocity.y += gravity * Time.deltaTime;
@@ -163,7 +189,7 @@ public class CopycatAI : EnemyBase
     {
         if (patrolPoints == null || patrolPoints.Length == 0) return;
         Vector3 target = patrolPoints[patrolIndex].position;
-        target.y = transform.position.y; // aggiunto perchè il nemico volava (da fixare)
+        target.y = transform.position.y; 
         Chase(target, walkSpeed);
 
         if (Vector3.Distance(transform.position, target) < 0.2f)
@@ -192,7 +218,6 @@ public class CopycatAI : EnemyBase
         if (attackTimer < attackCooldown) return;
         if (Vector3.Distance(transform.position, player.position) <= attackRange)
         {
-            animator.SetTrigger("Attack"); // animazione colpo (da capire)
             var ps = player.GetComponent<PlayerCombatStats>();
             if (ps != null)
             {
@@ -219,6 +244,12 @@ public class CopycatAI : EnemyBase
         // se è player, applica danno da contatto
         if (other.GetComponentInParent<PlayerCombatStats>() is PlayerCombatStats ps)
         {
+
+            if (currentState == EnemyState.BladeTransition)
+            {
+                bladeHitDuringTransition = true;
+            }
+
             float damage = 0f;
             switch (currentState)
             {
@@ -268,6 +299,7 @@ public class CopycatAI : EnemyBase
                     EnemyState.BladeTransition));
                 break;
             case EnemyState.BladeTransition:
+                bladeHitDuringTransition = false; //reset
                 animator.SetTrigger("EnterBladeTransition");
                 StartCoroutine(BladeTransitionRoutine());
                 break;
@@ -313,14 +345,13 @@ public class CopycatAI : EnemyBase
     // coroutine per BladeTransition (4s di apertura lame)
     private IEnumerator BladeTransitionRoutine()
     {
-        float t = 4f;
-        bool allHit = false;
+        float t = 4f; // durata apertura lame 
         while (t > 0f)
         {
-            yield return null;
             t -= Time.deltaTime;
+            yield return null;
         }
-        TransitionToState(allHit ? EnemyState.TriggeredRunAttack : EnemyState.BladeAttack);
+        TransitionToState(bladeHitDuringTransition ? EnemyState.TriggeredRunAttack : EnemyState.BladeAttack);
     }
 
     private IEnumerator DelayedTransition(EnemyState newState, float delay)
