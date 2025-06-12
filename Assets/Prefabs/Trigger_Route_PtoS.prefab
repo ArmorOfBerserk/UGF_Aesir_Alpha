@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5429050998571661091}
   - component: {fileID: 1160825658221222469}
   - component: {fileID: 6423766921620608787}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Trigger_Route_PtoS
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -63,13 +63,11 @@ MonoBehaviour:
     _leftPointIndex: 0
     _commonPointIndex: 0
     _rightPointIndex: 0
-    _isInvertForward: 0
   SecondarySpline:
     Spline: {fileID: 0}
     _controlPointIndex: 1
     _finalPointIndex: 2
-    _isInvertForward: 0
-  _chosenKey: 3
+  _choosenKey: 0
 --- !u!23 &6423766921620608787
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -126,7 +124,7 @@ GameObject:
   - component: {fileID: 7842775981987689687}
   - component: {fileID: 313881487766185891}
   - component: {fileID: 487664538291123603}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Trigger_Down
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -192,7 +190,7 @@ GameObject:
   - component: {fileID: 6522807519195258861}
   - component: {fileID: 9031706183899021918}
   - component: {fileID: 6928067837821863203}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Trigger_Up
   m_TagString: Untagged
   m_Icon: {fileID: 0}

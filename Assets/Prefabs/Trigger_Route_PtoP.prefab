@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5779749979212216349}
   - component: {fileID: 8193689170245948070}
   - component: {fileID: 1616201011781744513}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Trigger_Route_PtoP
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -125,9 +125,7 @@ MonoBehaviour:
     Spline: {fileID: 0}
     _upperPointIndex: 0
     _lowerPointIndex: 0
-    _isInvertForward: 0
   _spline2:
     Spline: {fileID: 0}
     _upperPointIndex: 0
     _lowerPointIndex: 0
-    _isInvertForward: 0

@@ -125,7 +125,10 @@ public struct SecondarySplineData
 
 public class PrimaryToSecondaryTrigger : MonoBehaviour
 {
-    KeyCode[] KeyCodes = { KeyCode.W, KeyCode.A, KeyCode.D, KeyCode.S };
+    private Vector2 moveInput;
+    private Vector2 previousInput;
+
+    KeyCode[] KeyCodes = { KeyCode.W, KeyCode.S };
     [SerializeField] private CustomEvent _triggerUp;
     [SerializeField] private CustomEvent _triggerDown;
     [SerializeField] public PrimarySplineData PrimarySpline;
@@ -136,9 +139,17 @@ public class PrimaryToSecondaryTrigger : MonoBehaviour
     [SerializeField] private ChoosenKey _choosenKey = ChoosenKey.W;
     private Transform _triggerTransform;
 
+    public Vector2 MoveInput { get { return moveInput; } }
+    /* void HandleMove(Vector2 m) => moveInput = m; */
+
     private void HandleSwitchToPrimarySpline(Transform transform)
     {
         OnSwitchToPrimarySpline?.Invoke(PrimarySpline);
+    }
+
+    void Start()
+    {
+        InputManager.Instance.OnMove += (move) => moveInput = move;
     }
 
     private void HandleTriggerAreaExit()
@@ -158,14 +169,20 @@ public class PrimaryToSecondaryTrigger : MonoBehaviour
 
     void Update()
     {
+        bool upPressed = moveInput.y > 0.5f && previousInput.y <= 0.5f;
+        bool downPressed = moveInput.y < -0.5f && previousInput.y >= -0.5f;
+
+
         if (_isInsideTrigger && Input.GetKeyDown(KeyCodes[(int)_choosenKey]))
-        {
-            OnSwitchToSecondarySpline?.Invoke(SecondarySpline, _triggerTransform);
-        }
+            if (_isInsideTrigger && (upPressed || downPressed))
+            {
+                OnSwitchToSecondarySpline?.Invoke(SecondarySpline, _triggerTransform);
+            }
     }
 
     void OnEnable()
     {
+        /* InputManager.Instance.OnMove += HandleMove; */
         _triggerUp.EnterTrigger += HandleTriggerAreaEnter;
         _triggerUp.ExitTrigger += HandleTriggerAreaExit;
         _triggerDown.EnterTrigger += HandleSwitchToPrimarySpline;
@@ -173,6 +190,7 @@ public class PrimaryToSecondaryTrigger : MonoBehaviour
 
     void OnDisable()
     {
+        /* InputManager.Instance.OnMove -= HandleMove; */
         _triggerUp.EnterTrigger -= HandleTriggerAreaEnter;
         _triggerUp.ExitTrigger -= HandleTriggerAreaExit;
         _triggerDown.EnterTrigger -= HandleSwitchToPrimarySpline;
