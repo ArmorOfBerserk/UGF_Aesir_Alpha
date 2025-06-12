@@ -64,7 +64,8 @@ public class PrimaryToPrimaryTrigger : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        EventMessageManager.SendTextMessage("Premi W per andare SU\nPremi S per andare giù");
+        
+        /* EventMessageManager.SendTextMessage("Premi W per andare SU\nPremi S per andare giù"); */
         _isEntered = true;
     }
 

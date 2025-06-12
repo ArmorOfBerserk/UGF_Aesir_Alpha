@@ -2,27 +2,33 @@ using System;
 using TMPro;
 using UnityEngine;
 
+public enum IndicationOnScreenEnum
+{
+    UP_DIRECTION = 0,
+    DOWN_DIRECTION,
+    DIALOGUE_INTERACTION
+}
+
 public class MessageDisplay : MonoBehaviour
 {
     private CanvasGroup _canvasGroup;
-    [SerializeField] private TextMeshProUGUI _keyText;
+    [SerializeField] GameObject[] panels;
     void Start()
     {
         _canvasGroup = GetComponent<CanvasGroup>();
         _canvasGroup.alpha = 0;
     }
 
-    private void ShowMessage(string message)
+    //Ci andrà un enum
+    private void ShowMessage(IndicationOnScreenEnum indication)
     {
-        //Inserimento messaggio
-        _keyText.text = message;
         _canvasGroup.alpha = 1;
+        panels[(int)indication].SetActive(true);
     }
 
     private void HideMessage()
     {
-        _canvasGroup.alpha = 0;
-        _keyText.text = "";
+        /* _canvasGroup.alpha = 0; */
     }
 
     /// <summary>

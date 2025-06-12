@@ -144,13 +144,14 @@ public class PrimaryToSecondaryTrigger : MonoBehaviour
     private void HandleTriggerAreaExit()
     {
         _isInsideTrigger = false;
+        
         EventMessageManager.DeleteMessage();
     }
 
     private void HandleTriggerAreaEnter(Transform triggerTransform)
     {
-        var direction = _choosenKey ==  ChoosenKey.W ? "su" : "giù";
-        EventMessageManager.SendTextMessage($"Premi {_choosenKey} per andare {direction}");
+        Debug.Log(triggerTransform.tag);
+        EventMessageManager.SendTextMessage(_choosenKey == ChoosenKey.W ? IndicationOnScreenEnum.UP_DIRECTION : IndicationOnScreenEnum.DOWN_DIRECTION);
         _triggerTransform = triggerTransform;
         _isInsideTrigger = true;
     }
@@ -169,7 +170,7 @@ public class PrimaryToSecondaryTrigger : MonoBehaviour
         _triggerUp.ExitTrigger += HandleTriggerAreaExit;
         _triggerDown.EnterTrigger += HandleSwitchToPrimarySpline;
     }
-    
+
     void OnDisable()
     {
         _triggerUp.EnterTrigger -= HandleTriggerAreaEnter;
